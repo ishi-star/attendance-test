@@ -1,8 +1,8 @@
 # マーケット
 ## 環境構築
 ### Dockerビルド
-- git clone git@github.com:ishi-star/market-test.git
-- cd market-test
+- git clone git@github.com:ishi-star/attendance-test.git
+- cd attendance-test
 - DockerDesktopアプリを立ち上げる
 - docker/php/DockerfileのFROM php:7.4.9-fpmをFROM php:7.4-fpmに書き換える
 （私の環境の影響なのか書き換えないとビルドできませんでした）
@@ -42,3 +42,4 @@ php artisan storage:link
 - 開発環境：http://localhost/
 - phpMyAdmin:：http://localhost:8080/
 - ユーザー登録：http://localhost/register
+- 管理者ログイン画面：http://localhost/admin/login
