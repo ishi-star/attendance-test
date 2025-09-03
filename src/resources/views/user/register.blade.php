@@ -5,15 +5,15 @@
 
 <!-- css読み込み -->
 @section('css')
-<link rel="stylesheet" href="{{ asset('/css/authentication.css')  }}">
+<link rel="stylesheet" href="{{ asset('/css/auth.css')  }}">
 @endsection
 
 <!-- 本体 -->
 @section('content')
 
-<form action="/register" method="post" class="authenticate center">
+<form action="/register" method="post" class="form">
     @csrf
-    <h1 class="page__title">会員登録</h1>
+    <h2 class="page__title">会員登録</h2>
     <label for="name" class="entry__name">ユーザ名</label>
     <input name="name" id="name" type="text" class="input" value="{{ old('name') }}">
     <div class="form__error">
@@ -35,7 +35,7 @@
         {{ $message }}
         @enderror
     </div>
-    <label for="password_confirm" class="entry__name">確認用パスワード</label>
+    <label for="password_confirm" class="entry__name">パスワード確認</label>
     <input name="password_confirmation" id="password_confirm" type="password" class="input">
     <button class="btn btn--big">登録する</button>
     <a href="/login" class="link">ログインはこちら</a>

@@ -1,0 +1,40 @@
+/* 管理者ログイン、ユーザー登録、ログインのCSS */
+.page__title {}
+
+.entry__name {
+  align-self: flex-start;
+  /* ラベルだけ左揃え */
+  margin-bottom: 5px;
+  /* ラベルと入力欄の間に余白 */
+  font-weight: bold;
+  /* 見やすくするために太字 */
+}
+
+.input {
+  display: block;
+  width: 680px;
+  height: 45px;
+  padding: 0 10px;
+  /* 左右に少し余白を入れると見やすい */
+  font-size: 16px;
+  /* 中身の文字サイズも調整するとバランス良い */
+  box-sizing: border-box;
+  /* padding込みで指定サイズになる */
+}
+
+.btn--big {
+
+  width: 680px;
+  height: 45px;
+  font-size: 16px;
+  background-color: #000000;
+  /* ボタン色は好みで */
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.link {
+  display: block;
+}
