@@ -16,7 +16,7 @@
     <p><strong>日付：</strong>{{ \Carbon\Carbon::now()->format('Y年n月j日(D)') }}</p>
     <p><strong>出勤時間：</strong>{{ \Carbon\Carbon::now()->format('H:i') }}</p>
 
-    <form action="{{ route('attendance.clockIn') }}" method="POST">
+    <form action="/attendance/clock-in" method="POST">
       @csrf
       <button type="submit" class="clockin-button">出勤</button>
     </form>

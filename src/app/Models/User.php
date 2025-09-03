@@ -41,4 +41,16 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+        // ユーザーの勤怠一覧
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    // ユーザーの打刻修正申請一覧
+    public function stampCorrectionRequests()
+    {
+        return $this->hasMany(StampCorrectionRequest::class);
+    }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Attendance;
+use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {
@@ -15,6 +17,15 @@ class AttendanceController extends Controller
             'clock_in' => now(),
         ]);
 
-        return redirect()->back()->with('message', '出勤しました');
+    // 勤怠一覧画面にリダイレクト
+        return redirect('/attendance/list')->with('message', '出勤しました');
+    }
+
+        public function attendanceList()
+    {
+        $user = Auth::user();
+        $attendances = Attendance::where('user_id', $user->id)->get();
+
+        return view('user.list-attendance', compact('attendances'));
     }
 }
