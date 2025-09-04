@@ -8,6 +8,7 @@
 @endsection
 
 @section('content')
+<h2>勤怠一覧</h2>
 <table class="attendance-table">
   <thead>
     <tr>
