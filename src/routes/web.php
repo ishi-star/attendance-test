@@ -13,12 +13,16 @@ Route::get('/login', [UserController::class, 'showLoginForm']);
 // ユーザーログイン処理
 Route::post('/login', [UserController::class, 'login']);
 
+
 Route::middleware('auth')->group(function () {
     // 勤怠登録画面（ログイン必須）
     Route::get('/attendance', [UserController::class, 'showUserAttendance']);
 
     // 出勤ボタン押印
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);
-
+    Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
+    Route::post('/attendance/break-start', [AttendanceController::class, 'breakStart']);
+    Route::post('/attendance/break-end', [AttendanceController::class, 'breakEnd']);
+    // 勤怠一覧画面
     Route::get('/attendance/list', [AttendanceController::class, 'attendanceList']);
 });
