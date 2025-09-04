@@ -14,7 +14,7 @@
 <form action="/register" method="post" class="form">
     @csrf
     <h2 class="page__title">会員登録</h2>
-    <label for="name" class="entry__name">ユーザ名</label>
+    <label for="name" class="entry__name">名前</label>
     <input name="name" id="name" type="text" class="input" value="{{ old('name') }}">
     <div class="form__error">
         @error('name')

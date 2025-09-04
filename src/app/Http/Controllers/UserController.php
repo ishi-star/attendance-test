@@ -12,7 +12,7 @@ class UserController extends Controller
   // ユーザー登録画面表示
   public function showRegisterForm()
   {
-    return view('user.register');
+    return view('auth.register');
   }
 
   // ユーザー登録処理
@@ -38,9 +38,34 @@ class UserController extends Controller
     return redirect('/attendance');
   }
 
+  public function showLoginForm()
+  {
+    return view('auth.login');
+  }
+// 　ユーザーログイン画面表示
+  public function login(Request $request)
+  {
+        // バリデーション
+    $request->validate([
+        'name' => 'required|string',
+        'password' => 'required|string',
+    ]);
+
+    $credentials = $request->only('name', 'password');
+
+    if (Auth::attempt($credentials)) {
+        // 認証成功 → 勤怠一覧画面へリダイレクト
+      return redirect('/attendance/list');
+    }
+
+    // 認証失敗 → 元のログイン画面に戻す
+    return back()->withErrors([
+        'name' => 'ログイン情報が正しくありません。',
+    ])->withInput();
+  }
   // 勤怠登録画面表示
   public function showUserAttendance()
   {
-    return view('user.attendance');
+    return view('auth.attendance');
   }
 }

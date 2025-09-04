@@ -8,6 +8,10 @@ use App\Http\Controllers\AttendanceController;
 Route::get('/register', [UserController::class, 'showRegisterForm']);
 // ユーザー登録処理
 Route::post('/register', [UserController::class, 'register']);
+// ユーザーログイン画面表示
+Route::get('/login', [UserController::class, 'showLoginForm']);
+// ユーザーログイン処理
+Route::post('/login', [UserController::class, 'login']);
 
 Route::middleware('auth')->group(function () {
     // 勤怠登録画面（ログイン必須）

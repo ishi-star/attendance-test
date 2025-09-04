@@ -26,6 +26,6 @@ class AttendanceController extends Controller
         $user = Auth::user();
         $attendances = Attendance::where('user_id', $user->id)->get();
 
-        return view('user.list-attendance', compact('attendances'));
+        return view('auth.list-attendance', compact('attendances'));
     }
 }
