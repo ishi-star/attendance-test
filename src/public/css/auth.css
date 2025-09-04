@@ -16,9 +16,11 @@
 
 .entry__name {
   width: 680px;
+  font-size: 18px;
   text-align: left;
       /* ラベルだけ左揃え */
-  margin-bottom: 5px;
+  margin-top: 30px;
+  margin-bottom: 3px;
   /* ラベルと入力欄の間に余白 */
   font-weight: bold;
   /* 見やすくするために太字 */
@@ -36,7 +38,6 @@
 }
 
 .btn--big {
-
   width: 680px;
   height: 45px;
   font-size: 16px;
@@ -46,4 +47,14 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  margin-top: 45px;
+  margin-bottom: 15px;
+}
+
+.link {
+  display: block;
+  width: 257px;
+  height: 49px;
+  line-height: 49px;
+  text-align: center;
 }
