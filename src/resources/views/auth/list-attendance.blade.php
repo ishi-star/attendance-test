@@ -16,7 +16,7 @@
       <th>出勤</th>
       <th>退勤</th>
       <th>休憩</th>
-      <th>勤務時間</th>
+      <th>合計</th>
       <th>詳細</th>
     </tr>
   </thead>

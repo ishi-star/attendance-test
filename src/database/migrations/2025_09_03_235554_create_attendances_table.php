@@ -10,9 +10,16 @@ return new class extends Migration {
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+
+            // 出勤
             $table->dateTime('clock_in')->nullable();
+            // 退勤
             $table->dateTime('clock_out')->nullable();
-            $table->integer('break_time')->nullable()->change();
+
+             // 合計休憩時間（分）
+            $table->integer('break_time')->nullable();
+
+            // 勤務時間（分）
             $table->integer('work_time')->default(0);
             $table->timestamps();
         });

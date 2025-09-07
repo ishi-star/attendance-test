@@ -19,10 +19,10 @@
     <nav class="header__nav">
       <ul class="nav__list">
         <li class="nav__item"><a href="">勤怠</a></li>
-        <li class="nav__item"><a href="">勤怠一覧</a></li>
+        <li class="nav__item"><a href="/attendance/list">勤怠一覧</a></li>
         <li class="nav__item"><a href="">申請</a></li>
         <li class="nav__item">
-          <form action="" method="POST">
+          <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit" class="logout-button">ログアウト</button>
           </form>
