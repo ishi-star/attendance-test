@@ -23,11 +23,11 @@
   <tbody>
     @foreach($attendances as $attendance)
       <tr>
-        <td>{{ $attendance->date }}</td>
-        <td>{{ $attendance->start_time }}</td>
-        <td>{{ $attendance->end_time }}</td>
-        <td>{{ $attendance->break_time }}</td>
-        <td>{{ $attendance->work_hours }}</td>
+        <td>{{ $attendance->clock_in->format('Y-m-d') }}</td> <!-- 日付 -->
+        <td>{{ $attendance->clock_in->format('H:i') }}</td>  <!-- 出勤 -->
+        <td>{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}</td> <!-- 退勤 -->
+        <td>{{ $attendance->break_time }}分</td> <!-- 休憩 -->
+        <td>{{ $attendance->work_time }}分</td> <!-- 合計 -->
         {{-- <td><a href="{{ route('attendance.show', $attendance->id) }}">詳細</a></td> --}}
       </tr>
     @endforeach

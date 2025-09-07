@@ -16,7 +16,7 @@ Route::post('/login', [UserController::class, 'login']);
 
 Route::middleware('auth')->group(function () {
     // 勤怠登録画面（ログイン必須）
-    Route::get('/attendance', [UserController::class, 'showUserAttendance']);
+    Route::get('/attendance', [AttendanceController::class, 'showUserAttendance']);
 
     // 出勤ボタン押印
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);

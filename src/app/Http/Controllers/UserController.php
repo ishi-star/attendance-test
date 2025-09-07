@@ -61,15 +61,4 @@ class UserController extends Controller
             'name' => 'ログイン情報が正しくありません。',
         ])->withInput();
     }
-
-    // 勤怠画面表示
-    public function showUserAttendance()
-    {
-        $user = Auth::user();
-        $attendance = Attendance::where('user_id', $user->id)
-            ->whereDate('clock_in', now())
-            ->first();
-
-        return view('auth.attendance', compact('attendance'));
-    }
 }

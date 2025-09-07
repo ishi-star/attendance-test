@@ -9,7 +9,10 @@ return new class extends Migration {
     {
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')
+                        ->constrained()
+                            ->onDelete('cascade');
+            // ->onDelete('cascade')もし親となるusersテーブルのユーザーが削除されたら、紐づいているattendancesテーブルの勤怠記録も一緒に削除する
 
             // 出勤
             $table->dateTime('clock_in')->nullable();

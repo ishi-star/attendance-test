@@ -9,14 +9,29 @@ use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
-    public function clockIn()
+        // 勤怠打刻画面を表示する
+    public function showUserAttendance()
     {
         $user = Auth::user();
-
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('clock_in', now())
             ->first();
 
+        return view('auth.attendance', compact('attendance'));
+    }
+
+        // 出勤を記録する
+    public function clockIn(Request $request)
+    {
+        // ログイン中のユーザーIDを取得
+        $user = Auth::user();
+
+        // 既に同じ日に出勤記録がないかチェック
+        $attendance = Attendance::where('user_id', $user->id)
+            ->whereDate('clock_in', now())
+            ->first();
+
+        // もし出勤記録がなければ、新規レコードを作成
         if ($attendance) {
             return redirect()->back()->with('message', '今日の出勤はすでに記録済みです。');
         }
@@ -29,15 +44,18 @@ class AttendanceController extends Controller
         return redirect()->back()->with('message', '出勤しました');
     }
 
-    public function clockOut()
+    // 退勤を記録する
+    public function clockOut(Request $request)
     {
         $user = Auth::user();
 
+        // 今日の出勤記録を取得
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('clock_in', now())
             ->first();
 
-        if (!$attendance || $attendance->clock_out) {
+        // 記録が存在し、かつ退勤時間がまだ記録されていなければ
+        if (!$attendance && !$attendance->clock_out) {
             return redirect()->back()->with('message', '退勤できません');
         }
 
