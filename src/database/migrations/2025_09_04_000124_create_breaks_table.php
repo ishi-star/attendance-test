@@ -15,8 +15,8 @@ return new class extends Migration {
             $table->dateTime('start_time');
             $table->dateTime('end_time')->nullable();
 
-             // この休憩の合計時間（分）
-            $table->integer('duration')->nullable();
+             // この休憩の合計時間（分）必要ない？
+            // $table->integer('duration')->nullable();
             $table->timestamps();
         });
     }

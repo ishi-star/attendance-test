@@ -13,7 +13,7 @@ class BreakModel extends Model
         'attendance_id',
         'start_time',
         'end_time',
-        'duration'
+        // 'duration'
     ];
 
     protected $casts = [

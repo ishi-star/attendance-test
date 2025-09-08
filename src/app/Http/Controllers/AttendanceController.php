@@ -51,17 +51,22 @@ class AttendanceController extends Controller
 
         // 今日の出勤記録を取得
         $attendance = Attendance::where('user_id', $user->id)
-            ->whereDate('clock_in', now())
-            ->first();
+                                ->whereDate('clock_in', Carbon::today())
+                                ->first();
 
         // 記録が存在し、かつ退勤時間がまだ記録されていなければ
-        if (!$attendance && !$attendance->clock_out) {
-            return redirect()->back()->with('message', '退勤できません');
-        }
+        if ($attendance && !$attendance->clock_out) {
+            // 勤務時間の計算
+            $clockIn = new Carbon($attendance->clock_in);
+            $clockOut = Carbon::now();
+            $workTime = $clockIn->diffInMinutes($clockOut);
 
-        $attendance->update([
-            'clock_out' => now()
-        ]);
+            $attendance->update([
+                'clock_out' => $clockOut,
+                'work_time' => $workTime,// 勤務時間を更新
+            ]);
+            return redirect()->back()->with('message', '退勤しました');
+        }
 
         return redirect()->back()->with('message', '退勤しました');
     }
