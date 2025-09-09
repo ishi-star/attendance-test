@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AttendanceController;
 
@@ -26,4 +27,9 @@ Route::middleware('auth')->group(function () {
 
     // 勤怠一覧画面
     Route::get('/attendance/list', [AttendanceController::class, 'showAttendanceList']);
+
+    Route::post('/logout', function () {
+        Auth::logout();
+        return redirect('/login');
+    })->name('logout');
 });

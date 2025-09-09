@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>勤怠管理アプリ</title>
+  <title>勤怠管理アプリ共通部分</title>
   <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
   <link rel="stylesheet" href="{{ asset('css/app.css')}}">
   @yield('css')
@@ -16,9 +16,10 @@
     <img class="header__logo" src="{{ asset('/img/logo.png') }}" alt="コーチテックのロゴ">
 
     {{-- ナビゲーションメニュー --}}
+    @if(Auth::check()) {{-- ログインしている場合のみ表示 --}}
     <nav class="header__nav">
       <ul class="nav__list">
-        <li class="nav__item"><a href="">勤怠</a></li>
+        <li class="nav__item"><a href="/attendance">勤怠</a></li>
         <li class="nav__item"><a href="/attendance/list">勤怠一覧</a></li>
         <li class="nav__item"><a href="">申請</a></li>
         <li class="nav__item">
@@ -29,11 +30,11 @@
         </li>
       </ul>
     </nav>
-      @yield('link')
+    @endif
+    @yield('link')
   </header>
-    <div class="content">
-      @yield('content')
-    </div>
+  <div class="content">
+    @yield('content')
   </div>
 </body>
 </html>

@@ -2,6 +2,7 @@
 <!--　勤怠一覧画面です -->
 @section('title','勤怠一覧')
 
+
 <!-- css読み込み -->
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/attendance.css') }}">

@@ -3,6 +3,10 @@
 <!-- タイトル ユーザー登録画面です -->
 @section('title','会員登録')
 
+@section('header-nav')
+<!-- 会員登録画面ではナビゲーションは表示しない -->
+@endsection
+
 <!-- css読み込み -->
 @section('css')
 <link rel="stylesheet" href="{{ asset('/css/auth.css')  }}">

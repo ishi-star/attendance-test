@@ -1,7 +1,11 @@
 @extends('layout.app')
 
 <!-- タイトル ユーザー登録画面です -->
-@section('title','会員登録')
+@section('title','ログイン')
+
+@section('header-nav')
+<!-- ログイン画面ではナビゲーションは表示しない -->
+@endsection
 
 <!-- css読み込み -->
 @section('css')
