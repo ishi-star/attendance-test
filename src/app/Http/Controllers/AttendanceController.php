@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Attendance;
+use App\Models\Brake;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -56,14 +57,28 @@ class AttendanceController extends Controller
 
         // 記録が存在し、かつ退勤時間がまだ記録されていなければ
         if ($attendance && !$attendance->clock_out) {
+            // 今日の全休憩記録を取得
+            $allBreaks = $attendance->breaks()->get();
+            $totalBreakTime = 0;
+
+            foreach ($allBreaks as $break) {
+                // 休憩終了時間がある場合にのみ、計算して合計する
+                if ($break->end_time) {
+                    $totalBreakTime += $break->end_time->diffInMinutes($break->start_time);
+                }
+            }
+
             // 勤務時間の計算
             $clockIn = new Carbon($attendance->clock_in);
             $clockOut = Carbon::now();
             $workTime = $clockIn->diffInMinutes($clockOut);
 
+            // 総休憩時間を勤務時間から引く
+            $totalWorkTime = $workTime - $totalBreakTime;
+
             $attendance->update([
                 'clock_out' => $clockOut,
-                'work_time' => $workTime,// 勤務時間を更新
+                'work_time' => $totalWorkTime,// 勤務時間を更新
             ]);
             return redirect()->back()->with('message', '退勤しました');
         }
@@ -71,48 +86,64 @@ class AttendanceController extends Controller
         return redirect()->back()->with('message', '退勤しました');
     }
 
-    public function breakStart()
+    // 休憩開始を記録する
+    public function breakStart(Request $request) // ここをstartTimeに変更！
     {
         $user = Auth::user();
-        $attendance = Attendance::where('user_id', $user->id)
-            ->whereDate('clock_in', now())
-            ->first();
 
-        if (!$attendance) {
-            return redirect()->back()->with('message', '出勤していません');
+        $attendance = Attendance::where('user_id', $user->id)
+                                ->whereDate('clock_in', Carbon::today())
+                                ->first();
+
+        if ($attendance && !$attendance->clock_out) {
+            $latestBreak = Brake::where('attendance_id', $attendance->id)
+                                ->whereNull('end_time')
+                                ->first();
+
+            if (!$latestBreak) {
+                Brake::create([
+                    'attendance_id' => $attendance->id,
+                    'start_time' => Carbon::now(),
+                ]);
+                return redirect()->back()->with('message', '休憩を開始しました');
+            }
         }
 
-        $attendance->update([
-            'break_time' => now()
-        ]);
-
-        return redirect()->back()->with('message', '休憩開始');
+        return redirect()->back()->with('message', '休憩を開始できません');
     }
 
-    public function breakEnd()
+    // 休憩終了を記録する
+    public function breakEnd(Request $request)
     {
         $user = Auth::user();
-        $attendance = Attendance::where('user_id', $user->id)
-            ->whereDate('clock_in', now())
-            ->first();
 
-        if (!$attendance || !$attendance->break_time) {
-            return redirect()->back()->with('message', '休憩中ではありません');
+        $attendance = Attendance::where('user_id', $user->id)
+                                ->whereDate('clock_in', Carbon::today())
+                                ->first();
+
+        if ($attendance && !$attendance->clock_out) {
+            $latestBreak = Brake::where('attendance_id', $attendance->id)
+                                ->whereNull('end_time')
+                                ->first();
+
+            if ($latestBreak) {
+                $latestBreak->update([
+                    'end_time' => Carbon::now(),
+                ]);
+                return redirect()->back()->with('message', '休憩を終了しました');
+            }
         }
 
-        $breakDuration = now()->diffInMinutes($attendance->break_time);
-
-        $attendance->update([
-            'break_time' => null,
-            'work_time' => ($attendance->work_time ?? 0) + $breakDuration
-        ]);
-
-        return redirect()->back()->with('message', '休憩終了');
+        return redirect()->back()->with('message', '休憩を終了できません');
     }
 
-    public function attendanceList()
+     // 勤怠一覧画面を表示する
+    public function showAttendanceList()
     {
+        // ログイン中のユーザー情報を取得
         $user = Auth::user();
+
+        // ログイン中のユーザーの勤怠記録をすべて取得し、作成日の新しい順に並び替える
         $attendances = Attendance::where('user_id', $user->id)
             ->orderBy('clock_in', 'desc')
             ->get();

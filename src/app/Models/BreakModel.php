@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class BreakModel extends Model
 {
+
+    use HasFactory;
+
     protected $table = 'breaks';
 
     protected $fillable = [
@@ -26,12 +29,10 @@ class BreakModel extends Model
         return $this->belongsTo(Attendance::class);
     }
 
-        // duration が null の場合は動的に計算
+        // アクセサを使って休憩時間を計算
     public function getDurationMinutesAttribute()
     {
-        if ($this->duration !== null) {
-            return $this->duration;
-        }
+        // 休憩開始と終了の両方の時間がある場合にのみ計算
         if ($this->end_time && $this->start_time) {
             return $this->end_time->diffInMinutes($this->start_time);
         }

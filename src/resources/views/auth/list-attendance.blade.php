@@ -1,6 +1,6 @@
 @extends('layout.app') {{-- 共通レイアウトを継承 --}}
 <!--　勤怠一覧画面です -->
-@section('title','会員登録')
+@section('title','勤怠一覧')
 
 <!-- css読み込み -->
 @section('css')
@@ -26,7 +26,7 @@
         <td>{{ $attendance->clock_in->format('Y-m-d') }}</td> <!-- 日付 -->
         <td>{{ $attendance->clock_in->format('H:i') }}</td>  <!-- 出勤 -->
         <td>{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}</td> <!-- 退勤 -->
-        <td>{{ $attendance->break_time }}分</td> <!-- 休憩 -->
+        <td>{{ $attendance->total_break_time }}分</td> <!-- 休憩 -->
         <td>{{ $attendance->work_time }}分</td> <!-- 合計 -->
         {{-- <td><a href="{{ route('attendance.show', $attendance->id) }}">詳細</a></td> --}}
       </tr>

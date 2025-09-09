@@ -52,19 +52,25 @@ class Attendance extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function breaks()
-    {
-        return $this->hasMany(BreakModel::class);
-    }
-
     public function stampCorrectionRequests()
     {
         return $this->hasMany(StampCorrectionRequest::class);
     }
 
-        // 休憩時間合計を breaks テーブルから算出
+    public function breaks()
+    {
+        return $this->hasMany(BreakModel::class);
+    }
+
+        //  総休憩時間を計算
     public function getTotalBreakMinutesAttribute()
     {
-        return $this->breaks->sum(fn($break) => $break->duration_minutes);
+        $totalBreakTime = 0;
+        foreach ($this->breaks as $break) {
+            if ($break->end_time) {
+                $totalBreakTime += $break->end_time->diffInMinutes($break->start_time);
+            }
+        }
+        return $totalBreakTime;
     }
 }

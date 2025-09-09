@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
     Route::post('/attendance/break-start', [AttendanceController::class, 'breakStart']);
     Route::post('/attendance/break-end', [AttendanceController::class, 'breakEnd']);
+
     // 勤怠一覧画面
-    Route::get('/attendance/list', [AttendanceController::class, 'attendanceList']);
+    Route::get('/attendance/list', [AttendanceController::class, 'showAttendanceList']);
 });
