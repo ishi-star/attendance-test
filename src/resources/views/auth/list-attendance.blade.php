@@ -21,7 +21,7 @@
       <th>詳細</th>
     </tr>
   </thead>
-  <tbody>
+  <div>
     @foreach($attendances as $attendance)
       <tr>
         <td>{{ $attendance->clock_in->format('Y-m-d') }}</td> <!-- 日付 -->
@@ -29,9 +29,9 @@
         <td>{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}</td> <!-- 退勤 -->
         <td>{{ $attendance->total_break_time }}分</td> <!-- 休憩 -->
         <td>{{ $attendance->work_time }}分</td> <!-- 合計 -->
-        {{-- <td><a href="{{ route('attendance.show', $attendance->id) }}">詳細</a></td> --}}
+        <td><a href="/attendance/detail/{{ $attendance->id }}">詳細</a></td>
       </tr>
     @endforeach
-  </tbody>
+  </div>
 </table>
 @endsection

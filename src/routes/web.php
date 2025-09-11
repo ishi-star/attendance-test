@@ -28,8 +28,13 @@ Route::middleware('auth')->group(function () {
     // 勤怠一覧画面
     Route::get('/attendance/list', [AttendanceController::class, 'showAttendanceList']);
 
+    // 勤怠詳細画面
+    Route::get('/attendance/detail/{id}', [AttendanceController::class, 'showAttendanceDetail']);
+
+    //ログアウトする処理
     Route::post('/logout', function () {
         Auth::logout();
         return redirect('/login');
     })->name('logout');
+
 });

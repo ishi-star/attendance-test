@@ -87,7 +87,7 @@ class AttendanceController extends Controller
     }
 
     // 休憩開始を記録する
-    public function breakStart(Request $request) // ここをstartTimeに変更！
+    public function breakStart(Request $request) 
     {
         $user = Auth::user();
 
@@ -145,9 +145,24 @@ class AttendanceController extends Controller
 
         // ログイン中のユーザーの勤怠記録をすべて取得し、作成日の新しい順に並び替える
         $attendances = Attendance::where('user_id', $user->id)
-            ->orderBy('clock_in', 'desc')
-            ->get();
+                                ->orderBy('clock_in', 'desc')
+                                ->get();
 
         return view('auth.list-attendance', compact('attendances'));
+    }
+
+    // 勤怠詳細画面を表示する
+    public function showAttendanceDetail($id)
+    {
+        // ログイン中のユーザー情報を取得
+        $user = Auth::user();
+
+        // 指定されたIDの勤怠記録を、関連する休憩記録と一緒に取得する
+        $attendance = Attendance::where('user_id', $user->id)
+                                ->with('breaks', 'user')
+                                // brakesとuserテーブルのデータも一緒に取得する
+                                ->findOrFail($id); // IDが見つからない場合は404エラーを返す
+
+        return view('auth.detail-attendance', compact('attendance'));
     }
 }
