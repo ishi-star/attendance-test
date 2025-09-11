@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Attendance;
-use App\Models\Brake;
+use App\Models\BreakModel;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -14,11 +14,23 @@ class AttendanceController extends Controller
     public function showUserAttendance()
     {
         $user = Auth::user();
-        $attendance = Attendance::where('user_id', $user->id)
-            ->whereDate('clock_in', now())
-            ->first();
 
-        return view('auth.attendance', compact('attendance'));
+        $attendance = Attendance::where('user_id', $user->id)
+                                    ->whereDate('clock_in', now())
+                                    ->first();
+
+        // 休憩開始打刻はしたが、休憩終了打刻をしていないかチェック
+        $isBreaking = false;
+        if ($attendance) {
+            $latestBreak = BreakModel::where('attendance_id', $attendance->id)
+                                    ->whereNull('end_time')
+                                    ->first();
+            if ($latestBreak) {
+                $isBreaking = true;
+            }
+        }
+
+        return view('auth.attendance', compact('attendance', 'isBreaking'));
     }
 
         // 出勤を記録する
@@ -96,12 +108,12 @@ class AttendanceController extends Controller
                                 ->first();
 
         if ($attendance && !$attendance->clock_out) {
-            $latestBreak = Brake::where('attendance_id', $attendance->id)
+            $latestBreak = BreakModel::where('attendance_id', $attendance->id)
                                 ->whereNull('end_time')
                                 ->first();
 
             if (!$latestBreak) {
-                Brake::create([
+                BreakModel::create([
                     'attendance_id' => $attendance->id,
                     'start_time' => Carbon::now(),
                 ]);
@@ -122,7 +134,7 @@ class AttendanceController extends Controller
                                 ->first();
 
         if ($attendance && !$attendance->clock_out) {
-            $latestBreak = Brake::where('attendance_id', $attendance->id)
+            $latestBreak = BreakModel::where('attendance_id', $attendance->id)
                                 ->whereNull('end_time')
                                 ->first();
 
