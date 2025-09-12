@@ -21,12 +21,12 @@
     </div>
 
     <div class="info-item">
-        <span class="info-label">勤務開始</span>
+        <span class="info-label">出勤</span>
         <span class="info-value">{{ $attendance->clock_in->format('H時i分s秒') }}</span>
     </div>
 
     <div class="info-item">
-        <span class="info-label">勤務終了</span>
+        <span class="info-label">退勤</span>
         <span class="info-value">
             @if ($attendance->clock_out)
                 {{ $attendance->clock_out->format('H時i分s秒') }}
@@ -35,22 +35,11 @@
             @endif
         </span>
     </div>
-
-    <div class="info-item">
-        <span class="info-label">総休憩時間</span>
-        <span class="info-value">{{ $attendance->total_break_time }}分</span>
-    </div>
-
-    <div class="info-item">
-        <span class="info-label">総勤務時間</span>
-        <span class="info-value">{{ $attendance->work_time }}分</span>
-    </div>
-
-    <h3>休憩記録</h3>
+    <h3>休憩</h3>
     <ul class="break-list">
         @foreach ($attendance->breaks as $break)
         <li class="break-item">
-            {{ $break->start_time->format('H:i') }} - 
+            {{ $break->start_time->format('H:i') }} -
             @if ($break->end_time)
                 {{ $break->end_time->format('H:i') }} ({{ $break->duration_minutes }}分)
             @else
