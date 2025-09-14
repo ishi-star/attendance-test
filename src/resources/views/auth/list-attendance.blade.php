@@ -5,7 +5,7 @@
 
 <!-- css読み込み -->
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/attendance.css') }}">
+<link rel="stylesheet" href="{{ asset('css/list-attendance.css') }}">
 @endsection
 
 @section('content')

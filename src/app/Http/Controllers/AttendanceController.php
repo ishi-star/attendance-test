@@ -46,7 +46,7 @@ class AttendanceController extends Controller
 
         // もし出勤記録がなければ、新規レコードを作成
         if ($attendance) {
-            return redirect()->back()->with('message', '今日の出勤はすでに記録済みです。');
+            return redirect()->back();
         }
 
         Attendance::create([
@@ -54,7 +54,7 @@ class AttendanceController extends Controller
             'clock_in' => now(),
         ]);
 
-        return redirect()->back()->with('message', '出勤しました');
+        return redirect()->back();
     }
 
     // 退勤を記録する
@@ -92,10 +92,10 @@ class AttendanceController extends Controller
                 'clock_out' => $clockOut,
                 'work_time' => $totalWorkTime,// 勤務時間を更新
             ]);
-            return redirect()->back()->with('message', '退勤しました');
+            return redirect()->back();
         }
 
-        return redirect()->back()->with('message', '退勤しました');
+        return redirect()->back();
     }
 
     // 休憩開始を記録する
@@ -117,11 +117,11 @@ class AttendanceController extends Controller
                     'attendance_id' => $attendance->id,
                     'start_time' => Carbon::now(),
                 ]);
-                return redirect()->back()->with('message', '休憩を開始しました');
+                return redirect()->back();
             }
         }
 
-        return redirect()->back()->with('message', '休憩を開始できません');
+        return redirect()->back();
     }
 
     // 休憩終了を記録する
@@ -142,11 +142,11 @@ class AttendanceController extends Controller
                 $latestBreak->update([
                     'end_time' => Carbon::now(),
                 ]);
-                return redirect()->back()->with('message', '休憩を終了しました');
+                return redirect()->back();
             }
         }
 
-        return redirect()->back()->with('message', '休憩を終了できません');
+        return redirect()->back();
     }
 
      // 勤怠一覧画面を表示する

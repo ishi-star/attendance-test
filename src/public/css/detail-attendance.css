@@ -1,3 +1,9 @@
+body {
+  background-color: #cacaca;
+  margin: 0;
+  padding: 0;
+}
+
 .detail-container {
   background-color: #fff;
   border-radius: 8px;
