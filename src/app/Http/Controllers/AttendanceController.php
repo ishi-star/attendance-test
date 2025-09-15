@@ -7,6 +7,8 @@ use App\Models\Attendance;
 use App\Models\BreakModel;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
+use Carbon\Localization\CarbonLocale;
 
 class AttendanceController extends Controller
 {
@@ -30,7 +32,10 @@ class AttendanceController extends Controller
             }
         }
 
-        return view('auth.attendance', compact('attendance', 'isBreaking'));
+         // 今日の曜日を取得
+        $dayOfWeek = Carbon::now()->locale('ja')->shortDayName;
+
+        return view('auth.attendance', compact('attendance', 'isBreaking', 'dayOfWeek'));
     }
 
         // 出勤を記録する
