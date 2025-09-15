@@ -97,14 +97,14 @@ class AttendanceController extends Controller
                 'clock_out' => $clockOut,
                 'work_time' => $totalWorkTime,// 勤務時間を更新
             ]);
-            return redirect()->back();
+            return redirect()->back()->with('message', 'お疲れ様でした');
         }
 
         return redirect()->back();
     }
 
     // 休憩開始を記録する
-    public function breakStart(Request $request) 
+    public function breakStart(Request $request)
     {
         $user = Auth::user();
 

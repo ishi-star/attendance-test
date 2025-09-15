@@ -3,3 +3,62 @@ body {
   margin: 0;
   padding: 0;
 }
+
+.attendance-list-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 30px;
+}
+
+.list-heading {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 25px;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table-header {
+  background-color: #e9ecef;
+}
+
+.table-cell {
+  border: 1px solid #dee2e6;
+  border-left: none;
+      /* 左側の縦線を非表示 */
+  border-right: none;
+      /* 右側の縦線を非表示 */
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.table-header .table-cell {
+  font-weight: bold;
+  color: #555;
+}
+
+.table-row:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.table-body .table-row:hover {
+  background-color: #e2f2ff;
+}
+
+.detail-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.detail-link:hover {
+  text-decoration: underline;
+}

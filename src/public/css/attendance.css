@@ -71,3 +71,9 @@ body {
     background-color: #fff;
       color: #000;
 }
+
+.message {
+  color: green;
+  font-weight: bold;
+  margin-bottom: 20px;
+}

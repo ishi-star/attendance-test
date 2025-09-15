@@ -1,37 +1,37 @@
-@extends('layout.app') {{-- 共通レイアウトを継承 --}}
-<!--　勤怠一覧画面です -->
-@section('title','勤怠一覧')
+@extends('layout.app')
 
+@section('title', '勤怠一覧')
 
-<!-- css読み込み -->
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/list-attendance.css') }}">
 @endsection
 
 @section('content')
-<h2>勤怠一覧</h2>
-<table class="attendance-table">
-  <thead>
-    <tr>
-      <th>日付</th>
-      <th>出勤</th>
-      <th>退勤</th>
-      <th>休憩</th>
-      <th>合計</th>
-      <th>詳細</th>
-    </tr>
-  </thead>
-  <div>
-    @foreach($attendances as $attendance)
-      <tr>
-        <td>{{ $attendance->clock_in->format('Y-m-d') }}</td> <!-- 日付 -->
-        <td>{{ $attendance->clock_in->format('H:i') }}</td>  <!-- 出勤 -->
-        <td>{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}</td> <!-- 退勤 -->
-        <td>{{ $attendance->total_break_time }}分</td> <!-- 休憩 -->
-        <td>{{ $attendance->work_time }}分</td> <!-- 合計 -->
-        <td><a href="/attendance/detail/{{ $attendance->id }}">詳細</a></td>
-      </tr>
-    @endforeach
-  </div>
-</table>
+<div class="attendance-list-container">
+    <h2 class="list-heading">勤怠一覧</h2>
+    <table class="attendance-table">
+        <thead class="table-header">
+            <tr>
+                <th class="table-cell">日付</th>
+                <th class="table-cell">出勤</th>
+                <th class="table-cell">退勤</th>
+                <th class="table-cell">休憩</th>
+                <th class="table-cell">合計</th>
+                <th class="table-cell">詳細</th>
+            </tr>
+        </thead>
+        <tbody class="table-body">
+            @foreach($attendances as $attendance)
+            <tr class="table-row">
+                <td class="table-cell">{{ $attendance->clock_in->locale('ja')->translatedFormat('m/d(D)') }}</td>
+                <td class="table-cell">{{ $attendance->clock_in->format('H:i') }}</td>
+                <td class="table-cell">{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '--:--' }}</td>
+                <td class="table-cell">{{ $attendance->total_break_time }}分</td>
+                <td class="table-cell">{{ $attendance->work_time }}分</td>
+                <td class="table-cell"><a href="/attendance/detail/{{ $attendance->id }}" class="detail-link">詳細</a></td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 @endsection

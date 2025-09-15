@@ -51,6 +51,9 @@
                 {{ $attendance->clock_in->format('Y年n月j日')}} ({{ $dayOfWeek }})
             </p>
             <p class="attendance-time">{{ $attendance->clock_out->format('H:i') }}</p>
+            @if(session('message'))
+            <p class="message">{{ session('message') }}</p>
+            @endif
         @endif
     </div>
 </div>
