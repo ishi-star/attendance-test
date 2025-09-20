@@ -26,10 +26,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/break-end', [AttendanceController::class, 'breakEnd']);
 
     // 勤怠一覧画面
-    Route::get('/attendance/list', [AttendanceController::class, 'showAttendanceList']);
+    Route::get('/attendance/list/{year?}/{month?}', [AttendanceController::class, 'showAttendanceList'])->name('attendance.list');
 
     // 勤怠詳細画面
     Route::get('/attendance/detail/{id}', [AttendanceController::class, 'showAttendanceDetail']);
+
+    // 勤怠修正のルート
+    Route::post('/attendance/correct/{id}', [AttendanceController::class, 'correctAttendance']);
 
     //ログアウトする処理
     Route::post('/logout', function () {

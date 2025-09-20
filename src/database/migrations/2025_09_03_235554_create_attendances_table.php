@@ -19,8 +19,18 @@ return new class extends Migration {
             // 退勤
             $table->dateTime('clock_out')->nullable();
 
+            // 総休憩時間（分）
+            $table->integer('total_break_time')->default(0);
+
             // 勤務時間（分）
             $table->integer('work_time')->default(0);
+
+            // 備考を追加
+            $table->string('remarks')->nullable();
+
+            // 承認ステータスを追加
+            $table->string('status')->default('pending');
+
             $table->timestamps();
         });
     }

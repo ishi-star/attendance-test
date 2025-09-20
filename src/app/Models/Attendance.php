@@ -4,101 +4,63 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Attendance extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'clock_in',
         'clock_out',
-        'break_time',
-        'work_time'
+        'total_break_time', // total_break_time に修正
+        'work_time',        // work_time に修正
+        'remarks',          // remarks を追加
+        'status',           // status を追加
     ];
 
-        // 出勤時刻を「H:i」形式で返す
-    public function getClockInFormattedAttribute()
-    {
-        return $this->clock_in ? $this->clock_in->format('H:i') : '';
-    }
-
-    // 退勤時刻を「H:i」形式で返す
-    public function getClockOutFormattedAttribute()
-    {
-        return $this->clock_out ? $this->clock_out->format('H:i') : '';
-    }
-    // 勤務時間を「H:i」形式で返す
-    // work_timeというデータベースに保存されているカラムの値をフォーマットするためのもの
-    public function getWorkTimeFormattedAttribute()
-    {
-        $hours = floor($this->work_time / 60);
-        $minutes = $this->work_time % 60;
-        return sprintf("%d:%02d", $hours, $minutes);
-    }
-
-    // 勤務時間を計算して「H:i」形式で返す
-public function getTotalWorkTimeAttribute()
-{
-    // 出勤と退勤が記録されているか確認
-    if ($this->clock_in && $this->clock_out) {
-        // 総勤務時間（分）を計算
-        $totalMinutes = $this->clock_in->diffInMinutes($this->clock_out);
-
-        // 総休憩時間を差し引く
-        $totalMinutes -= $this->total_break_time;
-
-        // 分を時間と分に変換
-        $hours = floor($totalMinutes / 60);
-        $minutes = $totalMinutes % 60;
-
-        return sprintf('%02d:%02d', $hours, $minutes);
-    }
-
-    return '--:--'; // 退勤していない場合は表示しない
-}
-
-        // 休憩時間を「H:i」形式で返す
-    public function getBreakTimeFormattedAttribute()
-    {
-        $hours = floor($this->break_time / 60);
-        $minutes = $this->break_time % 60;
-        return sprintf("%d:%02d", $hours, $minutes);
-    }
-
-    protected $casts = [
-        'clock_in' => 'datetime',
-        'clock_out' => 'datetime',
-        'break_time' => 'integer',
+    protected $dates = [
+        'clock_in',
+        'clock_out',
     ];
+
+    // userとのリレーション
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function stampCorrectionRequests()
-    {
-        return $this->hasMany(StampCorrectionRequest::class);
-    }
-
-    public function breaks()
+    // breaksとのリレーション
+    public function breaks(): HasMany
     {
         return $this->hasMany(BreakModel::class);
     }
 
-        //  総休憩時間を計算して「H:i」形式で返す
-    public function getTotalBreakTimeAttribute()
+    // 総勤務時間（work_time）を計算して「H:i」形式で返す
+    public function getFormattedWorkTimeAttribute(): string
     {
-    $totalMinutes = $this->breaks->sum(function ($break) {
-        // 終了時間が存在する場合にのみ計算
-        if ($break->end_time) {
-            return $break->start_time->diffInMinutes($break->end_time);
+        // $this->work_time は分単位で保存されていると仮定
+        if ($this->work_time === null) {
+            return '--:--';
         }
-        return 0;
-    });
+        $hours = floor($this->work_time / 60);
+        $minutes = $this->work_time % 60;
 
-    // 分を時間と分に変換
-    $hours = floor($totalMinutes / 60);
-    $minutes = $totalMinutes % 60;
-
-    return sprintf('%02d:%02d', $hours, $minutes);
+        return sprintf('%02d:%02d', $hours, $minutes);
     }
+
+    // 総休憩時間（total_break_time）を計算して「H:i」形式で返す
+    public function getFormattedBreakTimeAttribute(): string
+    {
+        // $this->total_break_time は分単位で保存されていると仮定
+        if ($this->total_break_time === null) {
+            return '--:--';
+        }
+        $hours = floor($this->total_break_time / 60);
+        $minutes = $this->total_break_time % 60;
+
+        return sprintf('%02d:%02d', $hours, $minutes);
+    }
+
 }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\Localization\CarbonLocale;
+use Carbon\CarbonPeriod;
 
 class AttendanceController extends Controller
 {
@@ -155,17 +156,41 @@ class AttendanceController extends Controller
     }
 
      // 勤怠一覧画面を表示する
-    public function showAttendanceList()
+    public function showAttendanceList(Request $request, $year = null, $month = null)
     {
+
+        // URLパラメータが直接渡されない場合、クエリパラメータから取得
+        if (is_null($year)) {
+            $year = $request->input('year', Carbon::now()->year);
+        }
+        if (is_null($month)) {
+            $month = $request->input('month', Carbon::now()->month);
+        }
+
+        $currentMonth = Carbon::createFromDate($year, $month, 1);
+
         // ログイン中のユーザー情報を取得
         $user = Auth::user();
 
         // ログイン中のユーザーの勤怠記録をすべて取得し、作成日の新しい順に並び替える
         $attendances = Attendance::where('user_id', $user->id)
-                                ->orderBy('clock_in', 'desc')
-                                ->get();
+                                ->whereYear('clock_in', $currentMonth->year)
+                                ->whereMonth('clock_in', $currentMonth->month)
+                                ->get()
+                                ->keyBy(function ($attendance) {
+                                    return $attendance->clock_in->format('Y-m-d');
+                                });
 
-        return view('auth.list-attendance', compact('attendances'));
+        // 今月の全日付を生成
+        $startOfMonth = $currentMonth->copy()->startOfMonth();
+        $endOfMonth = $currentMonth->copy()->endOfMonth();
+        $dates = CarbonPeriod::create($startOfMonth, '1 day', $endOfMonth);
+
+        // 前月と翌月の日付を計算
+        $previousMonth = $currentMonth->copy()->subMonth();
+        $nextMonth = $currentMonth->copy()->addMonth();
+
+        return view('auth.list-attendance', compact('dates', 'attendances', 'currentMonth', 'previousMonth', 'nextMonth'));
     }
 
     // 勤怠詳細画面を表示する
@@ -181,5 +206,69 @@ class AttendanceController extends Controller
                                 ->findOrFail($id); // IDが見つからない場合は404エラーを返す
 
         return view('auth.detail-attendance', compact('attendance'));
+    }
+
+    public function correctAttendance(Request $request, $id)
+    {
+        // 勤怠記録を取得
+        $attendance = Attendance::findOrFail($id);
+
+        // 勤怠記録が既に承認待ちまたは承認済みの場合、修正を許可しない
+        if ($attendance->status !== 'pending' && $attendance->status !== 'approved') {
+             // 'pending'と'approved'以外のステータスの場合、修正を拒否する
+             // 実際のロジックに応じて条件を変更してください
+            return redirect()->back()->with('error', 'この勤怠記録は修正できません。');
+        }
+
+        // 既存の勤怠記録を更新
+        $attendance->clock_in = Carbon::parse($request->input('clock_in'));
+        $attendance->clock_out = Carbon::parse($request->input('clock_out'));
+        $attendance->remarks = $request->input('remarks'); // 備考欄の値を保存
+        $attendance->status = 'pending'; // ステータスを「承認待ち」に設定
+        $attendance->save();
+
+        // 既存の休憩時間を更新
+        if ($request->has('breaks')) {
+            foreach ($request->input('breaks') as $breakId => $breakTimes) {
+                $break = BreakModel::findOrFail($breakId);
+                $break->start_time = Carbon::parse($breakTimes['start_time']);
+                $break->end_time = Carbon::parse($breakTimes['end_time']);
+                $break->save();
+            }
+        }
+
+        // 新しい休憩時間を追加
+        if ($request->has('new_break') && $request->input('new_break.start_time') && $request->input('new_break.end_time')) {
+            BreakModel::create([
+                'attendance_id' => $attendance->id,
+                'start_time' => Carbon::parse($request->input('new_break.start_time')),
+                'end_time' => Carbon::parse($request->input('new_break.end_time')),
+            ]);
+        }
+
+        // 総休憩時間と総勤務時間を再計算して保存
+        $this->updateWorkAndBreakTimes($attendance);
+
+        return redirect()->back()->with('success', '勤怠修正申請が完了しました。');
+    }
+
+        protected function updateWorkAndBreakTimes(Attendance $attendance)
+    {
+        // 総休憩時間を計算
+        $totalBreakMinutes = $attendance->breaks()->whereNotNull('end_time')->get()->sum(function ($break) {
+            return $break->start_time->diffInMinutes($break->end_time);
+        });
+
+        // 勤務時間を計算
+        $totalWorkMinutes = 0;
+        if ($attendance->clock_in && $attendance->clock_out) {
+            $totalWorkMinutes = $attendance->clock_out->diffInMinutes($attendance->clock_in);
+            $totalWorkMinutes -= $totalBreakMinutes;
+        }
+
+        // モデルの値を更新
+        $attendance->total_break_time = $totalBreakMinutes;
+        $attendance->work_time = $totalWorkMinutes;
+        $attendance->save();
     }
 }

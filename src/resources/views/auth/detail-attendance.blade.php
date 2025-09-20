@@ -44,6 +44,16 @@
                     </td>
                 </tr>
                 @endforeach
+
+                {{-- 新規追加用の休憩入力枠 --}}
+                <tr>
+                    <th>休憩{{ $attendance->breaks->count() + 1 }}</th>
+                    <td>
+                        <input type="time" name="new_break[start_time]" class="time-input">
+                        〜
+                        <input type="time" name="new_break[end_time]" class="time-input">
+                    </td>
+                </tr>
                 <tr>
                     <th>備考</th>
                     <td>
