@@ -8,11 +8,14 @@
 
 @section('content')
 <div class="attendance-container">
+    @if(session('message'))
+    <p class="message">{{ session('message') }}</p>
+    @endif
     <div class="attendance-card">
         @if(!$attendance)
             <p class="attendance-status">勤務外</p>
             <p class="attendance-date">
-                {{ $attendance->clock_in->format('Y年n月j日')}} ({{ $dayOfWeek }})
+                {{ \Carbon\Carbon::now()->locale('ja')->translatedFormat('Y年n月j日')}} ({{ $dayOfWeek }})
             </p>
             <p class="attendance-time">{{ \Carbon\Carbon::now()->format('H:i') }}</p>
             <form action="/attendance/clock-in" method="POST">
@@ -22,7 +25,7 @@
         @elseif($attendance && !$attendance->clock_out && !$isBreaking)
             <p class="attendance-status">勤務中</p>
             <p class="attendance-date">
-                {{ $attendance->clock_in->format('Y年n月j日')}} ({{ $dayOfWeek }})
+                {{ $attendance->clock_in->locale('ja')->translatedFormat('Y年n月j日')}} ({{ $dayOfWeek }})
             </p>
             <p class="attendance-time">{{ $attendance->clock_in->format('H:i') }}</p>
             <div class=attendance__button-side>
@@ -38,7 +41,7 @@
         @elseif($isBreaking)
             <p class="attendance-status">休憩中</p>
             <p class="attendance-date">
-                {{ $attendance->clock_in->format('Y年n月j日')}} ({{ $dayOfWeek }})
+                {{ $attendance->clock_in->locale('ja')->translatedFormat('Y年n月j日')}} ({{ $dayOfWeek }})
             </p>
             <p class="attendance-time">{{ \Carbon\Carbon::now()->format('H:i') }}</p>
             <form action="/attendance/break-end" method="POST">
@@ -48,12 +51,9 @@
         @else
             <p class="attendance-status">退勤済</p>
             <p class="attendance-date">
-                {{ $attendance->clock_in->format('Y年n月j日')}} ({{ $dayOfWeek }})
+                {{ $attendance->clock_in->locale('ja')->translatedFormat('Y年n月j日')}} ({{ $dayOfWeek }})
             </p>
             <p class="attendance-time">{{ $attendance->clock_out->format('H:i') }}</p>
-            @if(session('message'))
-            <p class="message">{{ session('message') }}</p>
-            @endif
         @endif
     </div>
 </div>

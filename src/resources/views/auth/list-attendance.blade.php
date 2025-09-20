@@ -25,9 +25,9 @@
             <tr class="table-row">
                 <td class="table-cell">{{ $attendance->clock_in->locale('ja')->translatedFormat('m/d(D)') }}</td>
                 <td class="table-cell">{{ $attendance->clock_in->format('H:i') }}</td>
-                <td class="table-cell">{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '--:--' }}</td>
-                <td class="table-cell">{{ $attendance->total_break_time }}分</td>
-                <td class="table-cell">{{ $attendance->work_time }}分</td>
+                <td class="table-cell">{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}</td>
+                <td class="table-cell">{{ $attendance->total_break_time }}</td>
+                <td class="table-cell"> {{ $attendance->work_time ? $attendance->work_time : '' }}</td>
                 <td class="table-cell"><a href="/attendance/detail/{{ $attendance->id }}" class="detail-link">詳細</a></td>
             </tr>
             @endforeach
