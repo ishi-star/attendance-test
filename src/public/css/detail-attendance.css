@@ -4,58 +4,90 @@ body {
   padding: 0;
 }
 
-.detail-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-  max-width: 600px;
-  margin: 50px auto;
+td {
+  width: 70%;
+}
+.detail-page-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
 }
 
-.detail-heading {
-  font-size: 24px;
+.page-heading {
+  font-size: 22px;
   font-weight: bold;
   margin-bottom: 20px;
-  text-align: center;
+  border-left: 5px solid #333;
+  padding-left: 10px;
 }
 
-.info-item {
+.card-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 48px;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.detail-table tr {
+  border-bottom: 1px solid #e5e5e5;
+  /* 行全体に線 */
+}
+
+.detail-table th {
+  width: 25%;
+  text-align: left;
+  font-weight: 600;
+  padding: 14px 12px;
+  background: #fff;
+  vertical-align: middle;
+}
+
+.detail-table td {
   display: flex;
   justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
+  padding: 14px 12px;
+  font-weight: 600;
+  background: #fff;
 }
 
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  font-weight: bold;
-  color: #555;
-}
-
-.info-value {
-  color: #333;
-}
-
-.break-list {
-  list-style: none;
-  padding: 0;
-  margin: 10px 0 20px;
-}
-
-.break-item {
-  padding: 5px 0;
+.time-input {
+  padding: 6px 10px;
   font-size: 14px;
-  color: #666;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
-.back-link {
-  display: block;
-  text-align: center;
-  margin-top: 20px;
-  color: #007bff;
-  text-decoration: none;
+.remarks-input {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+}
+
+.form-actions {
+  text-align: right;
+}
+
+.correction-button {
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 30px;
+  margin-top: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.correction-button:hover {
+  background: #555;
 }

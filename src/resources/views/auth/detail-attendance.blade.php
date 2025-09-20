@@ -7,50 +7,56 @@
 @endsection
 
 @section('content')
-<div class="detail-container">
-    <h2 class="detail-heading">勤怠詳細</h2>
+<div class="detail-page-container">
+    <h2 class="page-heading">勤怠詳細</h2>
 
-    <div class="info-item">
-        <span class="info-label">名前</span>
-        <span class="info-value">{{ $attendance->user->name }}</span>
-    </div>
+    <form action="/attendance/correct/{{ $attendance->id }}" method="POST">
+        @csrf
 
-    <div class="info-item">
-        <span class="info-label">日付</span>
-        <span class="info-value">{{ $attendance->clock_in->format('Y年m月d日') }}</span>
-    </div>
-
-    <div class="info-item">
-        <span class="info-label">出勤</span>
-        <span class="info-value">{{ $attendance->clock_in->format('H時i分s秒') }}</span>
-    </div>
-
-    <div class="info-item">
-        <span class="info-label">退勤</span>
-        <span class="info-value">
-            @if ($attendance->clock_out)
-                {{ $attendance->clock_out->format('H時i分s秒') }}
-            @else
-                --:--:--
-            @endif
-        </span>
-    </div>
-    <div class="info-item">
-        <span class="info-label">休憩</span>
-        <div class="info-value">
-            <ul class="break-list">
-                @foreach ($attendance->breaks as $break)
-                <li class="break-item">
-                    {{ $break->start_time->format('H:i') }} -
-                    @if ($break->end_time)
-                        {{ $break->end_time->format('H:i') }} ({{ $break->duration_minutes }}分)
-                    @else
-                        休憩中
-                    @endif
-                </li>
+        <div class="card-container">
+            <table class="detail-table">
+                <tr>
+                    <th>名前</th>
+                    <td>{{ $attendance->user->name }}</td>
+                </tr>
+                <tr>
+                    <th>日付</th>
+                    <td>
+                        <span class="detail-time">{{ $attendance->clock_in->format('Y年') }}</span>
+                        <span class="detail-time">{{ $attendance->clock_in->format('m月d日') }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>出勤・退勤</th>
+                    <td>
+                        <input type="time" name="clock_in" value="{{ $attendance->clock_in->format('H:i') }}" class="time-input">
+                        〜
+                        <input type="time" name="clock_out" value="{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}" class="time-input">
+                    </td>
+                </tr>
+                @foreach($attendance->breaks as $index => $break)
+                <tr>
+                    <th>休憩{{ $index + 1 }}</th>
+                    <td>
+                        <input type="time" name="breaks[{{ $break->id }}][start_time]" value="{{ $break->start_time->format('H:i') }}" class="time-input">
+                        〜
+                        <input type="time" name="breaks[{{ $break->id }}][end_time]" value="{{ $break->end_time ? $break->end_time->format('H:i') : '' }}" class="time-input">
+                    </td>
+                </tr>
                 @endforeach
-            </ul>
+                <tr>
+                    <th>備考</th>
+                    <td>
+                        <textarea name="remarks" class="remarks-input" placeholder="修正理由を記入してください"></textarea>
+                    </td>
+                </tr>
+            </table>
         </div>
-    </div>
+
+        <!-- ボタンをカードの外に出す -->
+        <div class="form-actions">
+            <button type="submit" class="correction-button">修正</button>
+        </div>
+    </form>
 </div>
 @endsection
