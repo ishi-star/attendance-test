@@ -7,18 +7,18 @@
 @endsection
 
 @section('content')
-<div class="attendance-list-container">
-    <h2 class="list-heading">勤怠一覧</h2>
+<h2 class="list-heading">勤怠一覧</h2>
 
-    <div class="month-navigation">
-        <a href="{{ route('attendance.list', ['year' => $previousMonth->year, 'month' => $previousMonth->month]) }}" class="month-link">
-            &lt; 前月
-        </a>
-        <div class="current-month">{{ $currentMonth->format('Y年m月') }}</div>
-        <a href="{{ route('attendance.list', ['year' => $nextMonth->year, 'month' => $nextMonth->month]) }}" class="month-link">
-            翌月 &gt;
-        </a>
-    </div>
+<div class="month-navigation">
+    <a href="{{ route('attendance.list', ['year' => $previousMonth->year, 'month' => $previousMonth->month]) }}" class="month-link">
+        &larr; 前月
+    </a>
+    <div class="current-month">{{ $currentMonth->format('Y年m月') }}</div>
+    <a href="{{ route('attendance.list', ['year' => $nextMonth->year, 'month' => $nextMonth->month]) }}" class="month-link">
+        翌月 &rarr;
+    </a>
+</div>
+<div class="attendance-list-container">
     <table class="attendance-table">
         <thead class="table-header">
             <tr>

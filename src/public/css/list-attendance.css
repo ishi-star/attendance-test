@@ -4,6 +4,45 @@ body {
   padding: 0;
 }
 
+.month-navigation {
+  max-width: 900px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  margin: 20px auto;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 10px 40px;
+}
+
+.current-month {
+  /* カレンダー画像を背景として設定 */
+  background-image: url(../img/calender.png);
+  background-repeat: no-repeat;
+  /* 画像の繰り返しを防ぐ */
+  background-position: left center;
+  /* 画像を左端、中央に配置 */
+  background-size: 16px;
+  /* 画像のサイズを調整 */
+
+  /* テキストと画像の間にスペースを作る */
+  padding-left: 25px;
+  /* 画像の幅+余白分を確保 */
+
+  /* テキストのフォントスタイルを調整 */
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.month-link {
+  text-decoration: none;
+  color: #333;
+  /* リンクの文字色を調整する場合 */
+}
+
 .attendance-list-container {
   max-width: 900px;
   margin: 0 auto;
