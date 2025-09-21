@@ -4,6 +4,12 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AdminController;
+
+// 管理者ログイン画面表示
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
+});
 
 // ユーザー登録画面表示
 Route::get('/register', [UserController::class, 'showRegisterForm']);
@@ -13,6 +19,7 @@ Route::post('/register', [UserController::class, 'register']);
 Route::get('/login', [UserController::class, 'showLoginForm']);
 // ユーザーログイン処理
 Route::post('/login', [UserController::class, 'login']);
+
 
 
 Route::middleware('auth')->group(function () {
