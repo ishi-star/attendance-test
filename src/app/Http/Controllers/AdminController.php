@@ -24,7 +24,7 @@ class AdminController extends Controller
             // is_adminカラムがtrueかチェック
             if ($user->is_admin) {
                 // 管理者であれば、管理者用のトップページにリダイレクト
-                return redirect()->intended('/admin/home');
+                return redirect()->intended(route('admin.attendances'));
             }
 
             // 管理者でなければ、ログイン失敗として扱う
@@ -38,5 +38,10 @@ class AdminController extends Controller
         return back()->withErrors([
             'email' => 'ログイン情報が登録されていません',
         ]);
+    }
+
+    public function showAttendances()
+    {
+        return view('admin.admin-list-attendance');
     }
 }

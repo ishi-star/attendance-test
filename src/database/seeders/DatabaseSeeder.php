@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
     $this->call([
-        UsersTableSeeder::class,     // 先にユーザー作成
+        UserSeeder::class,     // 先にユーザー作成
         AttendanceSeeder::class,     // その後で勤怠作成
         StampCorrectionRequestsSeeder::class,
     ]);

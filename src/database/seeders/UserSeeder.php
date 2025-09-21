@@ -11,8 +11,8 @@ class UserSeeder extends Seeder
     public function run()
     {
         // 既存のデータを削除（念のため）
-        User::truncate();
-        
+        User::query()->delete();
+
         // 管理者ユーザーを作成
         User::create([
             'name' => 'Admin User',

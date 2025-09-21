@@ -1,16 +1,12 @@
-@extends('layout.app')
+@extends('admin.layouts.admin_app')
 
 @section('title','管理者ログイン')
-
-@section('header-nav')
-@endsection
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('/css/admin-login.css') }}">
 @endsection
 
 @section('content')
-
 <form method="POST" action="{{ route('admin.login') }}" class="login-form">
     @csrf
     <h2 class="page__title">管理者ログイン</h2>
@@ -30,5 +26,4 @@
     </div>
     <button class="btn btn--big">ログインする</button>
 </form>
-
 @endsection

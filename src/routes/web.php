@@ -12,7 +12,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
     // ログイン処理を実行するためのルート（POSTリクエスト）
     Route::post('/login', [AdminController::class, 'login'])->name('login');
-
+     // 管理者勤怠一覧画面
+    Route::get('/attendance/list', [AdminController::class, 'showAttendances'])->name('attendances');
 
 });
 
