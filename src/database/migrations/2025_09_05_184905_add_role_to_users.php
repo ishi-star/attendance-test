@@ -14,8 +14,8 @@ class AddRoleToUsers extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('user'); 
-            // roleカラム追加、デフォルトは 'user'
+            // boolean型で'is_admin'カラムを追加します
+            $table->boolean('is_admin')->default(false)->after('password');
         });
     }
 
@@ -27,8 +27,8 @@ class AddRoleToUsers extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role'); 
-            // roleカラムを削除
+            $table->dropColumn('is_admin'); 
+            // カラムを削除
         });
     }
 }

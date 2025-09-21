@@ -6,9 +6,14 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AdminController;
 
-// 管理者ログイン画面表示
+
 Route::prefix('admin')->name('admin.')->group(function () {
+    // 管理者ログイン画面表示
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
+    // ログイン処理を実行するためのルート（POSTリクエスト）
+    Route::post('/login', [AdminController::class, 'login'])->name('login');
+
+
 });
 
 // ユーザー登録画面表示
