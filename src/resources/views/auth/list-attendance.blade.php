@@ -37,7 +37,7 @@
                 @endphp
                 <tr class="table-row">
                     <td class="table-cell">{{ $date->locale('ja')->translatedFormat('m/d(D)') }}</td>
-                    
+
                     @if($attendance)
                         <td class="table-cell">{{ $attendance->clock_in->format('H:i') }}</td>
                         <td class="table-cell">{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}</td>
@@ -47,7 +47,10 @@
                         <td class="table-cell">
                             {{ floor($attendance->work_time / 60) }}:{{ sprintf('%02d', $attendance->work_time % 60) }}
                         </td>
-                        <td class="table-cell"><a href="/attendance/detail/{{ $attendance->id }}" class="detail-link">詳細</a></td>
+                        <td class="table-cell">
+                            <a href="/attendance/detail/{{ $attendance->id }}" class="detail-link">詳細
+                            </a>
+                        </td>
                     @else
                         <td class="table-cell"></td>
                         <td class="table-cell"></td>

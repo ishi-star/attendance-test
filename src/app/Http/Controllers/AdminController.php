@@ -5,12 +5,18 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\AdminLoginRequest;
+use App\Models\Attendance;
+use Carbon\Carbon;
+
 
 class AdminController extends Controller
 {
     public function showLoginForm()
     {
-        return view('admin.admin-login');
+        $date = Carbon::today();//今日の日付を$date変数に格納
+        $attendances = Attendance::whereDate('clock_in', $date)->get();
+
+        return view('admin.admin-list-attendance', compact('attendances', 'date'));
     }
 
     public function login(AdminLoginRequest $request)
@@ -40,8 +46,14 @@ class AdminController extends Controller
         ]);
     }
 
-    public function showAttendances()
+    public function showAttendances(Request $request, $date = null)
     {
-        return view('admin.admin-list-attendance');
+        // URLから日付が指定されていなければ、本日の日付を使用
+        $date = $date ? Carbon::parse($date) : Carbon::today();
+
+        // 指定された日付の勤怠データを取得
+        $attendances = Attendance::whereDate('clock_in', $date)->get();
+
+        return view('admin.admin-list-attendance', compact('attendances', 'date'));
     }
 }

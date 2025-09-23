@@ -14,6 +14,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/login', [AdminController::class, 'login'])->name('login');
      // 管理者勤怠一覧画面
     Route::get('/attendance/list', [AdminController::class, 'showAttendances'])->name('attendances');
+    // 管理者勤怠一覧画面に日付パラメータを追加
+    Route::get('/attendance/list/{date?}', [AdminController::class, 'showAttendances'])->name('attendances');
 
 });
 
