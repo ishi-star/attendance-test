@@ -13,10 +13,7 @@ class AdminController extends Controller
 {
     public function showLoginForm()
     {
-        $date = Carbon::today();//今日の日付を$date変数に格納
-        $attendances = Attendance::whereDate('clock_in', $date)->get();
-
-        return view('admin.admin-list-attendance', compact('attendances', 'date'));
+        return view('admin.admin-login');
     }
 
     public function login(AdminLoginRequest $request)
