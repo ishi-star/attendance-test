@@ -2,6 +2,10 @@
 
 @section('title','管理者ログイン')
 
+@section('header')
+{{-- ヘッダーの内容を空にする --}}
+@endsection
+
 @section('css')
 <link rel="stylesheet" href="{{ asset('/css/admin-login.css') }}">
 @endsection

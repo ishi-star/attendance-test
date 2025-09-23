@@ -13,6 +13,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/login', [AdminController::class, 'login']);
     // 管理者勤怠一覧画面のルート
     Route::get('/attendance/list/{date?}', [AdminController::class, 'showAttendances'])->name('attendances');
+
+        // ログアウトルートを追加
+    Route::post('/logout', function () {
+        Auth::logout();
+        return redirect()->route('admin.login');
+    })->name('logout');
 });
 
 // ユーザー関連のルートを`/user`プレフィックスでグループ化

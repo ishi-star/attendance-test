@@ -28,7 +28,7 @@
                         <a href="#">申請一覧</a>
                     </li>
                     <li class="nav__item">
-                        <form action="" method="POST">
+                        <form action="{{ route('admin.logout') }}" method="POST">
                             @csrf
                             <button class="logout-button">ログアウト</button>
                         </form>
@@ -37,7 +37,7 @@
             </nav>
             @endif
     </header>
-    @show
+
     <main>
         @yield('content')
     </main>
