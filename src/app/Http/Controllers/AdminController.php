@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\AdminLoginRequest;
 use App\Models\Attendance;
 use Carbon\Carbon;
+use App\Models\BreakModel;
 
 
 class AdminController extends Controller
@@ -45,11 +46,34 @@ class AdminController extends Controller
 
     public function showAttendances(Request $request, $date = null)
     {
-        // URLから日付が指定されていなければ、本日の日付を使用
+        // URLの日付パラメータがない場合は今日の日付を設定
         $date = $date ? Carbon::parse($date) : Carbon::today();
 
-        // 指定された日付の勤怠データを取得
-        $attendances = Attendance::whereDate('clock_in', $date)->get();
+        // 指定日の勤怠データを取得し、関連するユーザー情報も一緒にロード
+        $attendances = Attendance::whereDate('clock_in', $date)
+            ->with('user')
+            ->get();
+
+        foreach ($attendances as $attendance) {
+            // 勤怠記録に紐づくすべての休憩時間の合計を計算
+            // ユーザー側のロジックに基づき、休憩時間（分）を直接データベースから取得
+            $totalBreakMinutes = $attendance->breaks->sum(function ($break) {
+                // 終了時間がない休憩は計算から除外
+                if ($break->end_time) {
+                    return $break->end_time->diffInMinutes($break->start_time);
+                }
+                return 0;
+            });
+            $attendance->total_break_time = $totalBreakMinutes;
+
+            // 勤務時間を計算
+            $totalWorkMinutes = 0;
+            if ($attendance->clock_out) {
+                $totalWorkMinutes = $attendance->clock_out->diffInMinutes($attendance->clock_in);
+                $totalWorkMinutes -= $totalBreakMinutes;
+            }
+            $attendance->work_time = $totalWorkMinutes;
+        }
 
         return view('admin.admin-list-attendance', compact('attendances', 'date'));
     }
