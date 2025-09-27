@@ -18,10 +18,10 @@
 <form action="/login" method="post" class="form">
     @csrf
     <h2 class="page__title">ログイン</h2>
-    <label for="name" class="entry__name">名前</label>
-    <input name="name" id="name" type="text" class="input" value="{{ old('name') }}">
+    <label for="name" class="entry__name">メールアドレス</label>
+    <input name="email" id="email" type="email" class="input" value="{{ old('email') }}">
     <div class="form__error">
-        @error('name')
+        @error('email')
         {{ $message }}
         @enderror
     </div>

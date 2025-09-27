@@ -47,18 +47,19 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
+            'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
 
-        $credentials = $request->only('name', 'password');
+        $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
             return redirect('/attendance');
         }
 
         return back()->withErrors([
-            'name' => 'ログイン情報が正しくありません。',
+            'email' => 'ログイン情報が正しくありません。',
         ])->withInput();
     }
 }
