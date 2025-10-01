@@ -12,7 +12,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminController::class, 'login']);
     // 管理者勤怠一覧画面のルート
-    Route::get('/attendance/list/{date?}', [AdminController::class, 'showAttendances'])->name('attendances');
+    Route::get('/attendances', [AdminController::class, 'showAttendances'])->name('attendances');
+     // 勤怠詳細画面のルート (ID指定)
+    Route::get('/attendances/detail/{id}', [AdminController::class, 'showAttendanceDetail'])->name('attendance.detail');
 
         // ログアウトルートを追加
     Route::post('/logout', function () {

@@ -44,10 +44,13 @@ class AdminController extends Controller
         ]);
     }
 
-    public function showAttendances(Request $request, $date = null)
+    public function showAttendances(Request $request)
     {
-        // URLの日付パラメータがない場合は今日の日付を設定
-        $date = $date ? Carbon::parse($date) : Carbon::today();
+        // 1. Requestから 'date' パラメータを取得。なければ Carbon::today() を使う
+        $date = $request->input('date', Carbon::today()->format('Y-m-d'));
+
+        // 2. 取得した日付を Carbon オブジェクトに変換
+        $date = Carbon::parse($date);
 
         // 指定日の勤怠データを取得し、関連するユーザー情報も一緒にロード
         $attendances = Attendance::whereDate('clock_in', $date)

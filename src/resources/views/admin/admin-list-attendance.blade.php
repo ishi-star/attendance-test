@@ -35,14 +35,16 @@
             <tr class="table-row">
                 <td class="table-cell">{{ $attendance->user->name }}</td>
                 <td class="table-cell">{{ $attendance->clock_in->format('H:i') }}</td>
-                <td class="table-cell">{{ $attendance->clock_out->format('H:i') }}</td>
+                <td class="table-cell">
+                    {{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}
+                </td>
                 <td class="table-cell">
                     {{ floor($attendance->total_break_time / 60) }}:{{ sprintf('%02d', $attendance->total_break_time % 60) }}
                 </td>
                 <td class="table-cell">
                     {{ floor($attendance->work_time / 60) }}:{{ sprintf('%02d', $attendance->work_time % 60) }}
                 </td>
-                <td>詳細</td>
+                <td class="table-cell">詳細</td>
             </tr>
             @endforeach
         </tbody>
