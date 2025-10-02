@@ -44,7 +44,10 @@
                 <td class="table-cell">
                     {{ floor($attendance->work_time / 60) }}:{{ sprintf('%02d', $attendance->work_time % 60) }}
                 </td>
-                <td class="table-cell">詳細</td>
+                <td class="table-cell">
+                    {{-- route('admin.attendance.detail') に Attendance ID を渡す --}}
+                    <a href="{{ route('admin.attendance.detail', ['id' => $attendance->id]) }}">詳細</a>
+                </td>
             </tr>
             @endforeach
         </tbody>

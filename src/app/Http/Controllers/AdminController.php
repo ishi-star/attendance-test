@@ -80,4 +80,81 @@ class AdminController extends Controller
 
         return view('admin.admin-list-attendance', compact('attendances', 'date'));
     }
+
+        /**
+     * 管理者向けの特定の勤怠記録の詳細表示（修正画面）
+     * * @param int $id AttendanceモデルのID
+     */
+    public function showAttendanceDetail($id)
+    {
+        // 勤怠記録を休憩記録とユーザー情報と共に取得
+        $attendance = Attendance::with(['breaks', 'user'])->findOrFail($id);
+        
+        // Carbonオブジェクトが必要な場合は、ここで取得（Eloquentの設定で自動取得されるはずですが、念のため確認）
+        // $attendance->clock_in, $attendance->clock_out, $attendance->breaks[i]->start_time などが
+        // Carbonオブジェクトであることを前提とします。
+
+        // ここで計算は不要なため、そのままビューに渡します
+        return view('admin.admin-detail-attendance', compact('attendance'));
+    }
+
+        /**
+     * 管理者による勤怠データの修正処理
+     * * @param Request $request
+     * @param int $id AttendanceモデルのID
+     */
+    public function correctAttendance(Request $request, $id)
+    {
+        // 1. バリデーション（ユーザー修正時と同じルールを適用）
+        $request->validate([
+            'clock_in' => 'required|date_format:H:i',
+            'clock_out' => 'nullable|date_format:H:i|after:clock_in',
+            'breaks' => 'nullable|array',
+            'breaks.*.start_time' => 'required_with:breaks.*.end_time|date_format:H:i',
+            'breaks.*.end_time' => 'nullable|date_format:H:i|after:breaks.*.start_time',
+            'new_break.start_time' => 'nullable|date_format:H:i',
+            'new_break.end_time' => 'nullable|date_format:H:i|after:new_break.start_time',
+            'remarks' => 'nullable|string|max:500', // 備考欄のバリデーションを追加
+        ]);
+
+        $attendance = Attendance::findOrFail($id);
+        $date = $attendance->clock_in->toDateString(); // 勤怠の日付を取得
+
+        // 2. 出退勤時間の修正
+        $attendance->clock_in = Carbon::parse($date . ' ' . $request->clock_in);
+        // clock_outが空でなければ設定
+        $attendance->clock_out = $request->clock_out 
+            ? Carbon::parse($date . ' ' . $request->clock_out) 
+            : null;
+        // 備考欄の値をデータベースに保存
+        $attendance->remarks = $request->remarks;
+        $attendance->save();
+
+        // 3. 既存の休憩時間の修正
+        if ($request->has('breaks')) {
+            foreach ($request->breaks as $breakId => $breakData) {
+                $break = BreakModel::findOrFail($breakId);
+                
+                // 休憩開始・終了時間を修正
+                $break->start_time = Carbon::parse($date . ' ' . $breakData['start_time']);
+                $break->end_time = $breakData['end_time'] 
+                    ? Carbon::parse($date . ' ' . $breakData['end_time']) 
+                    : null;
+                $break->save();
+            }
+        }
+
+        // 4. 新規休憩の追加
+        if (!empty($request->new_break['start_time']) && !empty($request->new_break['end_time'])) {
+            $newBreak = new BreakModel();
+            $newBreak->attendance_id = $id;
+            $newBreak->start_time = Carbon::parse($date . ' ' . $request->new_break['start_time']);
+            $newBreak->end_time = Carbon::parse($date . ' ' . $request->new_break['end_time']);
+            $newBreak->save();
+        }
+
+        // 5. 修正後のリダイレクト（勤怠一覧画面に戻る）
+        return redirect()->route('admin.attendances', ['date' => $date])
+                         ->with('success', '勤怠データを修正しました。');
+    }
 }
