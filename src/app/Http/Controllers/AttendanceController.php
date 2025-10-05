@@ -208,49 +208,121 @@ class AttendanceController extends Controller
         return view('auth.detail-attendance', compact('attendance'));
     }
 
-    public function correctAttendance(Request $request, $id)
-    {
-        // 勤怠記録を取得
-        $attendance = Attendance::findOrFail($id);
+    /**
+ * 勤怠修正を申請テーブルに記録する
+ */
+public function requestCorrection(Request $request, $id)
+{
+    // 1. バリデーション
+    $request->validate([
+        'clock_in' => 'nullable|date_format:H:i:s',
+        'clock_out' => 'nullable|date_format:H:i:s',
+        // 'break_time_diff' など休憩時間の修正ロジックに合わせて追加
+    ]);
 
-        // 勤怠記録が既に承認待ちまたは承認済みの場合、修正を許可しない
-        if ($attendance->status !== 'pending' && $attendance->status !== 'approved') {
-             // 'pending'と'approved'以外のステータスの場合、修正を拒否する
-             // 実際のロジックに応じて条件を変更してください
-            return redirect()->back()->with('error', 'この勤怠記録は修正できません。');
-        }
+    $attendance = Attendance::findOrFail($id);
 
-        // 既存の勤怠記録を更新
-        $attendance->clock_in = Carbon::parse($request->input('clock_in'));
-        $attendance->clock_out = Carbon::parse($request->input('clock_out'));
-        $attendance->remarks = $request->input('remarks'); // 備考欄の値を保存
-        $attendance->status = 'pending'; // ステータスを「承認待ち」に設定
-        $attendance->save();
-
-        // 既存の休憩時間を更新
-        if ($request->has('breaks')) {
-            foreach ($request->input('breaks') as $breakId => $breakTimes) {
-                $break = BreakModel::findOrFail($breakId);
-                $break->start_time = Carbon::parse($breakTimes['start_time']);
-                $break->end_time = Carbon::parse($breakTimes['end_time']);
-                $break->save();
-            }
-        }
-
-        // 新しい休憩時間を追加
-        if ($request->has('new_break') && $request->input('new_break.start_time') && $request->input('new_break.end_time')) {
-            BreakModel::create([
-                'attendance_id' => $attendance->id,
-                'start_time' => Carbon::parse($request->input('new_break.start_time')),
-                'end_time' => Carbon::parse($request->input('new_break.end_time')),
-            ]);
-        }
-
-        // 総休憩時間と総勤務時間を再計算して保存
-        $this->updateWorkAndBreakTimes($attendance);
-
-        return redirect()->back()->with('success', '勤怠修正申請が完了しました。');
+    // ユーザー自身の勤怠記録か確認
+    if ($attendance->user_id !== Auth::id()) {
+        return back()->with('error', '不正なアクセスです。');
     }
+
+    $date = $attendance->clock_in->toDateString();
+    $hasRequested = false;
+
+    // 2. 出勤時刻の申請
+    if ($request->filled('clock_in') && $attendance->clock_in->format('H:i:s') !== $request->clock_in) {
+        // 申請中のレコードが既に存在しないかチェック（任意だが推奨）
+        if (!StampCorrectionRequest::where('attendance_id', $id)
+            ->where('type', 'clock_in')
+            ->where('status', 'pending')
+            ->exists()) {
+            
+            StampCorrectionRequest::create([
+                'attendance_id' => $id,
+                'user_id' => $attendance->user_id,
+                'type' => 'clock_in',
+                'requested_time' => Carbon::parse($date . ' ' . $request->clock_in),
+                'reason' => $request->input('reason_clock_in'), // フォームから理由を受け取る前提
+                'status' => 'pending',
+            ]);
+            $hasRequested = true;
+        }
+    }
+
+    // 3. 退勤時刻の申請
+    if ($request->filled('clock_out') && optional($attendance->clock_out)->format('H:i:s') !== $request->clock_out) {
+        // 申請中のレコードが既に存在しないかチェック（任意だが推奨）
+        if (!StampCorrectionRequest::where('attendance_id', $id)
+            ->where('type', 'clock_out')
+            ->where('status', 'pending')
+            ->exists()) {
+                
+            StampCorrectionRequest::create([
+                'attendance_id' => $id,
+                'user_id' => $attendance->user_id,
+                'type' => 'clock_out',
+                'requested_time' => Carbon::parse($date . ' ' . $request->clock_out),
+                'reason' => $request->input('reason_clock_out'), // フォームから理由を受け取る前提
+                'status' => 'pending',
+            ]);
+            $hasRequested = true;
+        }
+    }
+    
+    // ★ 休憩時間の修正申請ロジックは、フォーム構造によって複雑になるため、ここでは省略し、
+    // ★ 出勤・退勤のみを対象とします。休憩も対象とする場合は、同様のロジックを実装してください。
+
+    if ($hasRequested) {
+        return redirect()->back()->with('success', '勤怠修正の申請を送信しました。');
+    }
+
+    return redirect()->back()->with('error', '修正内容に変更がないか、既に申請中です。');
+}
+    // requestCorrectionを記述したのでコメントアウト
+    // public function correctAttendance(Request $request, $id)
+    // {
+    //     // 勤怠記録を取得
+    //     $attendance = Attendance::findOrFail($id);
+
+    //     // 勤怠記録が既に承認待ちまたは承認済みの場合、修正を許可しない
+    //     if ($attendance->status !== 'pending' && $attendance->status !== 'approved') {
+    //          // 'pending'と'approved'以外のステータスの場合、修正を拒否する
+    //          // 実際のロジックに応じて条件を変更してください
+    //         return redirect()->back()->with('error', 'この勤怠記録は修正できません。');
+    //     }
+
+    //     // 既存の勤怠記録を更新
+    //     $attendance->clock_in = Carbon::parse($request->input('clock_in'));
+    //     $attendance->clock_out = Carbon::parse($request->input('clock_out'));
+    //     $attendance->remarks = $request->input('remarks'); // 備考欄の値を保存
+    //     $attendance->status = 'pending'; // ステータスを「承認待ち」に設定
+    //     $attendance->save();
+
+    //     // 既存の休憩時間を更新
+    //     if ($request->has('breaks')) {
+    //         foreach ($request->input('breaks') as $breakId => $breakTimes) {
+    //             $break = BreakModel::findOrFail($breakId);
+    //             $break->start_time = Carbon::parse($breakTimes['start_time']);
+    //             $break->end_time = Carbon::parse($breakTimes['end_time']);
+    //             $break->save();
+    //         }
+    //     }
+
+    //     // 新しい休憩時間を追加
+    //     if ($request->has('new_break') && $request->input('new_break.start_time') && $request->input('new_break.end_time')) {
+    //         BreakModel::create([
+    //             'attendance_id' => $attendance->id,
+    //             'start_time' => Carbon::parse($request->input('new_break.start_time')),
+    //             'end_time' => Carbon::parse($request->input('new_break.end_time')),
+    //         ]);
+    //     }
+
+    //     // 総休憩時間と総勤務時間を再計算して保存
+    //     $this->updateWorkAndBreakTimes($attendance);
+
+    //     return redirect()->back()->with('success', '勤怠修正申請が完了しました。');
+    // }
 
         protected function updateWorkAndBreakTimes(Attendance $attendance)
     {

@@ -9,7 +9,7 @@
 
 @section('content')
 <div class="detail-page-container">
-    <h2 class="page-heading">勤怠詳細（修正）</h2>
+    <h2 class="page-heading">勤怠詳細</h2>
 
     {{-- 修正アクションのパスを管理者側ルートに合わせる --}}
     {{-- 注意: 修正ルートはまだ定義されていない可能性があります。ルート定義に合わせて修正してください。 --}}

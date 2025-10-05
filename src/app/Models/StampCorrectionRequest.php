@@ -8,7 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class StampCorrectionRequest extends Model
 {
     protected $fillable = [
-        'attendance_id', 'user_id', 'type', 'requested_time', 'status', 'reason'
+        'attendance_id',
+        'user_id',
+        'type',
+        'requested_time',
+        'status',
+        'reason'
+    ];
+
+    protected $casts = [
+        'requested_time' => 'datetime',
     ];
 
     public function attendance()

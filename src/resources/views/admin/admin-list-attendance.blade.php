@@ -1,6 +1,6 @@
 @extends('admin.layouts.admin_app')
 
-@section('title', '勤怠一覧')
+@section('title', '一日ごとの勤怠一覧')
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/list-attendance.css') }}">

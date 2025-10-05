@@ -22,10 +22,10 @@
                         <a href="">勤怠一覧</a>
                     </li>
                     <li class="nav__item">
-                        <a href="staff/list">スタッフ一覧</a>
+                        <a href="{{ route('admin.users') }}">スタッフ一覧</a>
                     </li>
                     <li class="nav__item">
-                        <a href="#">申請一覧</a>
+                        <a href="{{ route('admin.requests') }}">申請一覧</a>
                     </li>
                     <li class="nav__item">
                         <form action="{{ route('admin.logout') }}" method="POST">
