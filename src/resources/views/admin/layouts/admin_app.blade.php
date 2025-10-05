@@ -22,7 +22,7 @@
                         <a href="">勤怠一覧</a>
                     </li>
                     <li class="nav__item">
-                        <a href="#">スタッフ一覧</a>
+                        <a href="staff/list">スタッフ一覧</a>
                     </li>
                     <li class="nav__item">
                         <a href="#">申請一覧</a>

@@ -13,11 +13,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/login', [AdminController::class, 'login']);
     // 管理者勤怠一覧画面のルート
     Route::get('/attendances', [AdminController::class, 'showAttendances'])->name('attendances');
+    // スタッフ一覧画面のルート(GET)
+    Route::get('/staff/list', [AdminController::class, 'showUsers'])->name('users');
      // 勤怠詳細画面のルート (ID指定)
     Route::get('/attendances/{id}', [AdminController::class, 'showAttendanceDetail'])->name('attendance.detail');
-    // 管理者側の勤怠修正処理ルート (POST) を追加
+    // 管理者側の勤怠修正処理ルート (POST)
     Route::post('/attendances/correct/{id}', [AdminController::class, 'correctAttendance'])->name('attendance.correct');
-    
+    // 個別スタッフの勤怠一覧画面
+    Route::get('/attendance/staff/{id}', [AdminController::class, 'showUserAttendances'])->name('user.attendances');
 
         // ログアウトルートを追加
     Route::post('/logout', function () {

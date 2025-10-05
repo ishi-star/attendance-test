@@ -8,6 +8,7 @@ use App\Http\Requests\AdminLoginRequest;
 use App\Models\Attendance;
 use Carbon\Carbon;
 use App\Models\BreakModel;
+use App\Models\User;
 
 
 class AdminController extends Controller
@@ -156,5 +157,16 @@ class AdminController extends Controller
         // 5. 修正後のリダイレクト（勤怠一覧画面に戻る）
         return redirect()->route('admin.attendances', ['date' => $date])
                          ->with('success', '勤怠データを修正しました。');
+    }
+
+    // 管理者向けのスタッフ一覧画面を表示
+    public function showUsers()
+    {
+        // ユーザー情報を取得
+        // 開発環境によっては管理ユーザーを除外するなどのフィルタリングが必要になる場合があります。
+        // 今回はシンプルに全ユーザーを取得します。
+        $users = User::orderBy('name')->get(); 
+
+        return view('admin.admin-staff-list', compact('users'));
     }
 }
