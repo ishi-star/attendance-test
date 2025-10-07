@@ -18,11 +18,20 @@ class AttendanceSeeder extends Seeder
      */
     public function run()
     {
-        $userId = 1; // ダミーデータを紐づけたいユーザーID
+        // 1. 一般ユーザー（user@example.com）を特定し、IDを取得する
+        $generalUser = User::where('email', 'user@example.com')->first();
 
-        // 2025年6月1日〜30日までのデータ作成
+        if (!$generalUser) {
+            // もしUserSeederが先に実行されていない場合、ここで処理を停止または警告
+            echo "Warning: General User (user@example.com) not found. Skipping Attendance Seeding.\n";
+            return;
+        }
+
+        $userId = $generalUser->id; // ユーザーの動的なIDを取得
+
+        // 2025年9月1日〜30日までのデータ作成
         for ($day = 1; $day <= 30; $day++) {
-            $date = Carbon::create(2025, 6, $day);
+            $date = Carbon::create(2025, 9, $day);
 
             // 土日は休みにする（もし土日も出勤なら削除）
             if ($date->isWeekend()) {

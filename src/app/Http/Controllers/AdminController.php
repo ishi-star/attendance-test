@@ -137,6 +137,10 @@ class AdminController extends Controller
             foreach ($request->breaks as $breakId => $breakData) {
                 $break = BreakModel::findOrFail($breakId);
                 
+                 // ★ 修正: 休憩開始時刻がない場合はスキップ（Blade側で非表示の場合などに備える）
+            if (empty($breakData['start_time'])) {
+                continue;
+            }
                 // 休憩開始・終了時間を修正
                 $break->start_time = Carbon::parse($date . ' ' . $breakData['start_time']);
                 $break->end_time = $breakData['end_time'] 
@@ -158,6 +162,9 @@ class AdminController extends Controller
         // 5. 修正後のリダイレクト（勤怠一覧画面に戻る）
         return redirect()->route('admin.attendances', ['date' => $date])
                          ->with('success', '勤怠データを修正しました。');
+
+        // 6. ★ 必須: 勤務時間と休憩時間を再計算して更新 ★
+        $this->updateWorkAndBreakTimes($attendance);
     }
 
     // 管理者向けのスタッフ一覧画面を表示
@@ -240,38 +247,67 @@ class AdminController extends Controller
     {
         // 申請レコードを取得
         $correctionRequest = StampCorrectionRequest::findOrFail($id);
-        
+
         // 申請が既に処理されていないかチェック
         if ($correctionRequest->status !== 'pending') {
              return back()->with('error', 'この申請は既に処理済みです。');
         }
-        
+
         // 関連する元の勤怠記録を取得
         $attendance = $correctionRequest->attendance;
 
         if ($request->action === 'approve') {
-            
+
             // 承認: 申請内容を勤怠本体（attendancesテーブル）に反映
             if ($correctionRequest->type === 'clock_in') {
                 $attendance->clock_in = $correctionRequest->requested_time;
             } elseif ($correctionRequest->type === 'clock_out') {
                 $attendance->clock_out = $correctionRequest->requested_time;
-            } 
-            // ※休憩時間('break_time')の処理は複雑になるため、ここでは省略します。
-            //   もし休憩時間も修正対象とする場合は、別途ロジックを追加する必要があります。
-            
+            } elseif ($correctionRequest->type === 'break_update' || $correctionRequest->type === 'break_add') {
+
+            // requested_data (JSON) から修正後の時刻を取得
+            if ($correctionRequest->requested_data) {
+                $data = json_decode($correctionRequest->requested_data, true);
+
+                // JSON内の日付時刻文字列をCarbonオブジェクトに変換
+                $startTime = Carbon::parse($data['start']);
+                $endTime = Carbon::parse($data['end']); // end が空でないことを前提とする
+
+                if ($correctionRequest->type === 'break_update') {
+                    // 既存の休憩（BreakModel）を更新
+                    $breakModel = BreakModel::find($correctionRequest->original_break_id);
+                    if ($breakModel) {
+                        $breakModel->update([
+                            'start_time' => $startTime,
+                            'end_time' => $endTime,
+                        ]);
+                    }
+                } elseif ($correctionRequest->type === 'break_add') {
+                    // 新規休憩を追加
+                    BreakModel::create([
+                        'attendance_id' => $attendance->id,
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                    ]);
+                }
+            }
+        }
+
             // 勤怠本体を保存
             $attendance->save();
-            
+
+            // ★ 必須: 勤務時間と休憩時間を再計算して更新 ★
+            $this->updateWorkAndBreakTimes($attendance);
+
             // 申請ステータスを承認済(approved)にする
             $correctionRequest->status = 'approved';
             $correctionRequest->save();
-            
+
             // 勤務時間と休憩時間を再計算 (AttendanceControllerのメソッドを流用)
             // ※ AttendanceController::updateWorkAndBreakTimes メソッドを呼び出すか、
             //   AdminControllerに同様のロジックを実装する必要があります。
             //   ここでは処理の簡略化のため一旦省略しますが、本番では必須です。
-            
+
             $message = '勤怠修正申請を承認しました。';
 
         } elseif ($request->action === 'reject') {
@@ -282,7 +318,49 @@ class AdminController extends Controller
         } else {
             return back()->with('error', '不正な操作です。');
         }
-        
+
         return redirect()->route('admin.requests')->with('success', $message);
+    }
+
+        /**
+     * 指定された勤怠記録について、休憩時間と勤務時間を再計算し、DBに保存する
+     *
+     * @param \App\Models\Attendance $attendance
+     * @return void
+     */
+    protected function updateWorkAndBreakTimes(\App\Models\Attendance $attendance)
+    {
+        // 1. 最新の休憩記録をリロード
+        // 休憩が修正・追加されている可能性があるため、リレーションをリロードします
+        $attendance->load('breaks'); 
+        
+        // 2. 総休憩時間 (分) を計算
+        $totalBreakMinutes = $attendance->breaks->sum(function ($break) {
+            // 終了時間がない休憩は計算から除外
+            if ($break->end_time && $break->start_time) {
+                return $break->end_time->diffInMinutes($break->start_time);
+            }
+            return 0;
+        });
+
+        // 3. 総勤務時間 (分) を計算
+        $totalWorkMinutes = 0;
+        if ($attendance->clock_out && $attendance->clock_in) {
+            // 出勤から退勤までの総時間
+            $totalDuration = $attendance->clock_out->diffInMinutes($attendance->clock_in);
+            
+            // 総時間から総休憩時間を引く
+            $totalWorkMinutes = $totalDuration - $totalBreakMinutes;
+
+            // 勤務時間が負にならないよう、最小値は0とする
+            if ($totalWorkMinutes < 0) {
+                $totalWorkMinutes = 0;
+            }
+        }
+
+        // 4. Attendanceレコードを更新
+        $attendance->total_break_time = $totalBreakMinutes; // 休憩時間を更新
+        $attendance->work_time = $totalWorkMinutes; // 勤務時間を更新
+        $attendance->save();
     }
 }

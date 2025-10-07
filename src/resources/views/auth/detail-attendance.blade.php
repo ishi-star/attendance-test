@@ -10,7 +10,7 @@
 <div class="detail-page-container">
     <h2 class="page-heading">勤怠詳細</h2>
 
-    <form action="/attendance/correct/{{ $attendance->id }}" method="POST">
+    <form action="{{ route('attendance.request', ['id' => $attendance->id]) }}" method="POST">
         @csrf
 
         <div class="card-container">
@@ -29,35 +29,46 @@
                 <tr>
                     <th>出勤・退勤</th>
                     <td>
-                        <input type="time" name="clock_in" value="{{ $attendance->clock_in->format('H:i') }}" class="time-input">
+                        <input type="time" name="clock_in"
+                        value="{{ old('clock_in', $attendance->clock_in->format('H:i')) }}"
+                        class="time-input">
                         〜
-                        <input type="time" name="clock_out" value="{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}" class="time-input">
+                        <input type="time" name="clock_out"
+                        value="{{ old('clock_out', $attendance->clock_out ? $attendance->clock_out->format('H:i') : '') }}"
+                        class="time-input">
                     </td>
                 </tr>
                 @foreach($attendance->breaks as $index => $break)
                 <tr>
                     <th>休憩{{ $index + 1 }}</th>
                     <td>
-                        <input type="time" name="breaks[{{ $break->id }}][start_time]" value="{{ $break->start_time->format('H:i') }}" class="time-input">
+                        <input type="time" name="breaks[{{ $break->id }}][start_time]"
+                            value="{{ old("breaks.{$break->id}.start_time", $break->start_time->format('H:i')) }}"
+                            class="time-input">
                         〜
-                        <input type="time" name="breaks[{{ $break->id }}][end_time]" value="{{ $break->end_time ? $break->end_time->format('H:i') : '' }}" class="time-input">
+                        <input type="time" name="breaks[{{ $break->id }}][end_time]"
+                            value="{{ old("breaks.{$break->id}.end_time", $break->end_time ? $break->end_time->format('H:i') : '') }}"
+                            class="time-input">
                     </td>
                 </tr>
                 @endforeach
 
-                {{-- 新規追加用の休憩入力枠 --}}
                 <tr>
                     <th>休憩{{ $attendance->breaks->count() + 1 }}</th>
                     <td>
-                        <input type="time" name="new_break[start_time]" class="time-input">
+                        <input type="time" name="new_break[start_time]"
+                            value="{{ old('new_break.start_time') }}"
+                            class="time-input">
                         〜
-                        <input type="time" name="new_break[end_time]" class="time-input">
+                        <input type="time" name="new_break[end_time]"
+                            value="{{ old('new_break.end_time') }}"
+                            class="time-input">
                     </td>
                 </tr>
                 <tr>
                     <th>備考</th>
                     <td>
-                        <textarea name="remarks" class="remarks-input" placeholder="修正理由を記入してください"></textarea>
+                        <textarea name="remarks" class="remarks-input" placeholder="修正理由を記入してください">{{ old('remarks') }}</textarea>
                     </td>
                 </tr>
             </table>

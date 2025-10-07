@@ -26,7 +26,7 @@
                 </ul>
             </div>
         @endif
-        
+
         <div class="card-container">
             <table class="detail-table">
                 <tr>
@@ -53,7 +53,7 @@
                         </span>
                     </td>
                 </tr>
-                
+
                 {{-- ★ 既存の休憩を全て表示 ★ --}}
                 @foreach($requestDetail->attendance->breaks as $index => $break)
                 <tr>

@@ -25,7 +25,7 @@ class StampCorrectionRequestsSeeder extends Seeder
                 'user_id' => $user->id,
                 'attendance_id' => $attendance->id,
                 'type' => 'clock_in',
-                'requested_time' => '2025-06-02 09:15:00',
+                'requested_time' => '2025-09-02 09:15:00',
                 'status' => 'pending',
                 'reason' => '遅刻修正のテスト',
             ]);
