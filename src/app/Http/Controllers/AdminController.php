@@ -212,15 +212,53 @@ class AdminController extends Controller
      */
     public function showRequests()
     {
-        // ステータスが「pending」の申請を、ユーザー情報と元の勤怠情報と共に取得
-        $requests = StampCorrectionRequest::where('status', 'pending')
-            ->with('user', 'attendance') // リレーションを通してユーザーと勤怠データも取得
+        // 1. 承認待ちの申請を取得し、グループ化
+        $pendingRequests = StampCorrectionRequest::where('status', 'pending')
+            ->with('user', 'attendance')
             ->orderBy('created_at', 'asc')
             ->get();
 
+        $groupedPendingRequests = $this->groupRequests($pendingRequests); // ヘルパーメソッドでグループ化
+
+        // 2. 承認済みの申請を取得し、グループ化
+        $approvedRequests = StampCorrectionRequest::where('status', 'approved')
+            ->with('user', 'attendance')
+            ->orderBy('updated_at', 'desc') // 承認日時が新しい順
+            ->get();
+
+        $groupedApprovedRequests = $this->groupRequests($approvedRequests); // ヘルパーメソッドでグループ化
+
         return view('admin.stamp-correction-request-list', [
-            'requests' => $requests,
+            'groupedPendingRequests' => $groupedPendingRequests, // 承認待ち
+            'groupedApprovedRequests' => $groupedApprovedRequests, // 承認済み
         ]);
+    }
+
+    /**
+     * 申請レコードのコレクションを attendance_id でグループ化し、整形するヘルパーメソッド
+     */
+    protected function groupRequests($requestCollection)
+    {
+        $groupedRequests = [];
+        $groupedCollection = $requestCollection->groupBy('attendance_id');
+
+        foreach ($groupedCollection as $attendanceId => $requests) {
+            $firstRequest = $requests->first();
+
+            // 勤怠情報がないレコードはスキップ (データ不備対策)
+            if (!$firstRequest->attendance) continue;
+
+            $groupedRequests[] = [
+                'attendance_id' => $attendanceId,
+                'user' => $firstRequest->user,
+                'date' => $firstRequest->attendance->clock_in->format('Y/m/d'),
+                'types' => $requests->pluck('type')->unique()->implode(', '),
+                'requests' => $requests,
+                'reason' => $firstRequest->reason,
+                'status' => $firstRequest->status, // pending または approved
+            ];
+        }
+        return $groupedRequests;
     }
 
     /**
