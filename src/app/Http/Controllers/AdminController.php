@@ -158,13 +158,13 @@ class AdminController extends Controller
             $newBreak->end_time = Carbon::parse($date . ' ' . $request->new_break['end_time']);
             $newBreak->save();
         }
+        // 5. ★ 必須: 勤務時間と休憩時間を再計算して更新 ★
+        $this->updateWorkAndBreakTimes($attendance);
 
-        // 5. 修正後のリダイレクト（勤怠一覧画面に戻る）
+        // 6. 修正後のリダイレクト（勤怠一覧画面に戻る）
         return redirect()->route('admin.attendances', ['date' => $date])
                          ->with('success', '勤怠データを修正しました。');
 
-        // 6. ★ 必須: 勤務時間と休憩時間を再計算して更新 ★
-        $this->updateWorkAndBreakTimes($attendance);
     }
 
     // 管理者向けのスタッフ一覧画面を表示
@@ -262,20 +262,32 @@ class AdminController extends Controller
     }
 
     /**
-     * 個別の勤怠修正申請の詳細を表示し、承認/却下を行う画面
+     * 個別の勤怠修正申請の詳細を表示し、承認を行う画面
      * @param int $id 申請ID (StampCorrectionRequest ID)
      */
     public function showRequestDetail($id)
     {
-        // 申請レコードを、関連するユーザー情報と勤怠情報と一緒に取得
-        // StampCorrectionRequestは複数のレコード（出勤、退勤、休憩）に分かれる可能性があるため、
-        // 実際には attendance_id を使ってその日の全ての申請を取得する必要がありますが、
-        // ここでは一旦、クリックされたID（個別の申請レコード）だけを取得します。
-        $requestDetail = StampCorrectionRequest::with('user', 'attendance')
+        // 申請レコードを取得
+        $requestDetail = StampCorrectionRequest::with('user', 'attendance.breaks')
                                                 ->findOrFail($id);
+
+        // 同じattendance_idの全ての申請をまとめて取得
+        $allRequests = StampCorrectionRequest::where('attendance_id', $requestDetail->attendance_id)
+                                            ->where('status', 'pending') // 承認待ちのみ
+                                            ->get();
+
+        // 申請内容を種類ごとに整理
+        $requests = [
+            'clock_in' => $allRequests->firstWhere('type', 'clock_in'),
+            'clock_out' => $allRequests->firstWhere('type', 'clock_out'),
+            'break_updates' => $allRequests->where('type', 'break_update'),
+            'break_adds' => $allRequests->where('type', 'break_add'),
+        ];
 
         return view('admin.stamp-correction-request-approve', [
             'requestDetail' => $requestDetail,
+            'requests' => $requests,
+            'attendance' => $requestDetail->attendance,
         ]);
     }
     /**

@@ -1,6 +1,6 @@
 @extends('admin.layouts.admin_app')
 
-@section('title', '勤怠詳細（管理者修正）')
+@section('title', '勤怠詳細画面（管理者修正）')
 
 @section('css')
 {{-- CSSファイル名がdetail-attendance.cssであればそのまま --}}

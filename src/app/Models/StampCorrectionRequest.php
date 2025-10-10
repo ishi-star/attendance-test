@@ -12,6 +12,7 @@ class StampCorrectionRequest extends Model
         'user_id',
         'type',
         'requested_time',
+        'requested_data',
         'status',
         'reason'
     ];

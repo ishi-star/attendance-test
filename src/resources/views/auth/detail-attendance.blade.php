@@ -43,11 +43,11 @@
                     <th>休憩{{ $index + 1 }}</th>
                     <td>
                         <input type="time" name="breaks[{{ $break->id }}][start_time]"
-                            value="{{ old("breaks.{$break->id}.start_time", $break->start_time->format('H:i')) }}"
+                            value="{{ old("breaks.{$break->id}.start_time", optional($break->start_time)->format('H:i')) }}"
                             class="time-input">
                         〜
                         <input type="time" name="breaks[{{ $break->id }}][end_time]"
-                            value="{{ old("breaks.{$break->id}.end_time", $break->end_time ? $break->end_time->format('H:i') : '') }}"
+                            value="{{ old("breaks.{$break->id}.end_time", optional($break->end_time)->format('H:i')) }}"
                             class="time-input">
                     </td>
                 </tr>

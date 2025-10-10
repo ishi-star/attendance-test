@@ -206,185 +206,173 @@ class AttendanceController extends Controller
                                 // brakesとuserテーブルのデータも一緒に取得する
                                 ->findOrFail($id); // IDが見つからない場合は404エラーを返す
 
-        return view('auth.detail-attendance', compact('attendance'));
+        $pendingRequests = StampCorrectionRequest::where('attendance_id', $id)
+            ->where('status', 'pending')
+            ->get();
+
+        return view('auth.detail-attendance', compact('attendance', 'pendingRequests'));
     }
 
     /**
  * 勤怠修正を申請テーブルに記録する
  */
-public function requestCorrection(Request $request, $id)
-{
-    // 1. バリデーション
-    $request->validate([
-        'clock_in' => 'nullable|date_format:H:i',
-        'clock_out' => 'nullable|date_format:H:i',
-        // 'break_time_diff' など休憩時間の修正ロジックに合わせて追加
-    ]);
+    public function requestCorrection(Request $request, $id)
+    {
+    // ★★★ この dd($request->all()); を削除する ★★★
+    // dd($request->all()); 
+    // ★★★ 削除後、必ず保存してください ★★★
+        // 1. バリデーション
+        $request->validate([
+            'clock_in' => 'nullable|date_format:H:i',
+            'clock_out' => 'nullable|date_format:H:i',
+            // ★★★ 新規追加の休憩時間のバリデーションを追加 ★★★
+            'new_break.start_time' => 'nullable|date_format:H:i',
+            'new_break.end_time' => 'nullable|date_format:H:i|after:new_break.start_time',
+            'remarks' => 'required|string|max:500', // 理由が必須であると仮定
+        ]);
 
-    $attendance = Attendance::findOrFail($id);
+        $attendance = Attendance::findOrFail($id);
 
-    // ユーザー自身の勤怠記録か確認
-    if ($attendance->user_id !== Auth::id()) {
-        return back()->with('error', '不正なアクセスです。');
-    }
-
-    $date = $attendance->clock_in->toDateString();
-    $hasRequested = false;
-
-    // 2. 出勤時刻の申請
-    if ($request->filled('clock_in') && $attendance->clock_in->format('H:i') !== $request->clock_in) {
-        // 申請中のレコードが既に存在しないかチェック（任意だが推奨）
-        if (!StampCorrectionRequest::where('attendance_id', $id)
-            ->where('type', 'clock_in')
-            ->where('status', 'pending')
-            ->exists()) {
-            
-            StampCorrectionRequest::create([
-                'attendance_id' => $id,
-                'user_id' => $attendance->user_id,
-                'type' => 'clock_in',
-                'requested_time' => Carbon::parse($date . ' ' . $request->clock_in),
-                'reason' => $request->input('remarks'), // フォームから理由を受け取る前提
-                'status' => 'pending',
-            ]);
-            $hasRequested = true;
+        // ユーザー自身の勤怠記録か確認
+        if ($attendance->user_id !== Auth::id()) {
+            return back()->with('error', '不正なアクセスです。');
         }
-    }
 
-    // 3. 退勤時刻の申請
-    if ($request->filled('clock_out') && optional($attendance->clock_out)->format('H:i') !== $request->clock_out) {
-        // 申請中のレコードが既に存在しないかチェック（任意だが推奨）
-        if (!StampCorrectionRequest::where('attendance_id', $id)
-            ->where('type', 'clock_out')
-            ->where('status', 'pending')
-            ->exists()) {
+        $date = $attendance->clock_in->toDateString();
+        $hasRequested = false;
+
+        // 2. 出勤時刻の申請
+        if ($request->filled('clock_in') && $attendance->clock_in->format('H:i') !== $request->clock_in) {
+            // 申請中のレコードが既に存在しないかチェック（任意だが推奨）
+            if (!StampCorrectionRequest::where('attendance_id', $id)
+                ->where('type', 'clock_in')
+                ->where('status', 'pending')
+                ->exists()) {
                 
-            StampCorrectionRequest::create([
-                'attendance_id' => $id,
-                'user_id' => $attendance->user_id,
-                'type' => 'clock_out',
-                'requested_time' => Carbon::parse($date . ' ' . $request->clock_out),
-                'reason' => $request->input('remarks'), // フォームから理由を受け取る前提
-                'status' => 'pending',
-            ]);
-            $hasRequested = true;
+                StampCorrectionRequest::create([
+                    'attendance_id' => $id,
+                    'user_id' => $attendance->user_id,
+                    'type' => 'clock_in',
+                    'requested_time' => Carbon::parse($date . ' ' . $request->clock_in),
+                    'reason' => $request->input('remarks'), // フォームから理由を受け取る前提
+                    'status' => 'pending',
+                ]);
+                $hasRequested = true;
+            }
         }
-    }
-    
-     // 4. ★★★ 既存の休憩時間の修正申請ロジックを追加 ★★★
-    if ($request->has('breaks')) {
-        foreach ($request->input('breaks') as $breakId => $breakTimes) {
-            $breakModel = BreakModel::find($breakId);
 
-            if ($breakModel) {
-                $originalStart = $breakModel->start_time->format('H:i');
-                $originalEnd = optional($breakModel->end_time)->format('H:i');
+        // 3. 退勤時刻の申請
+        if ($request->filled('clock_out') && optional($attendance->clock_out)->format('H:i') !== $request->clock_out) {
+            // 申請中のレコードが既に存在しないかチェック（任意だが推奨）
+            if (!StampCorrectionRequest::where('attendance_id', $id)
+                ->where('type', 'clock_out')
+                ->where('status', 'pending')
+                ->exists()) {
+                    
+                StampCorrectionRequest::create([
+                    'attendance_id' => $id,
+                    'user_id' => $attendance->user_id,
+                    'type' => 'clock_out',
+                    'requested_time' => Carbon::parse($date . ' ' . $request->clock_out),
+                    'reason' => $request->input('remarks'), // フォームから理由を受け取る前提
+                    'status' => 'pending',
+                ]);
+                $hasRequested = true;
+            }
+        }
+        
+        // 4. ★★★ 既存の休憩時間の修正申請ロジックを追加 ★★★
+        if ($request->filled('breaks')) {
+            foreach ($request->input('breaks') as $breakId => $breakTimes) {
+                $breakModel = BreakModel::find($breakId);
 
-                $requestedStart = $breakTimes['start_time'];
-                $requestedEnd = $breakTimes['end_time'];
+                if ($breakModel) {
+                    $originalStart = $breakModel->start_time->format('H:i');
+                    $originalEnd = optional($breakModel->end_time)->format('H:i');
 
-                // 開始時刻または終了時刻に修正がある場合
-                if ($originalStart !== $requestedStart || $originalEnd !== $requestedEnd) {
+                    $requestedStart = $breakTimes['start_time'];
+                    $requestedEnd = $breakTimes['end_time'];
 
-                    // 申請中のレコードが既に存在しないかチェック（任意）
-                    if (!StampCorrectionRequest::where('attendance_id', $id)
-                        ->where('type', 'break_update')
-                        ->where('original_break_id', $breakId) // どの休憩を修正したか特定するカラムが必要
-                        ->where('status', 'pending')
-                        ->exists()) {
+                    // 開始時刻または終了時刻に修正がある場合
+                    if ($originalStart !== $requestedStart || $originalEnd !== $requestedEnd) {
 
-                        StampCorrectionRequest::create([
-                            'attendance_id' => $id,
-                            'user_id' => $attendance->user_id,
-                            'type' => 'break_update',
-                            'original_break_id' => $breakId, // ★ break IDを記録 ★
-                            'requested_time' => null, // ★ requested_time はNULLにする ★
-                            'requested_data' => json_encode([ // ★ requested_dataにJSONで保存 ★
-                                'start' => $date . ' ' . $requestedStart,
-                                'end' => $date . ' ' . $requestedEnd,
-                            ]),
-                            'reason' => $request->input('remarks'), // 備考欄の値を理由として共有
-                            'status' => 'pending',
-                        ]);
-                        $hasRequested = true;
+                        // 申請中のレコードが既に存在しないかチェック（任意）
+                        if (!StampCorrectionRequest::where('attendance_id', $id)
+                            ->where('type', 'break_update')
+                            ->where('original_break_id', $breakId) // どの休憩を修正したか特定するカラムが必要
+                            ->where('status', 'pending')
+                            ->exists()) {
+
+                            StampCorrectionRequest::create([
+                                'attendance_id' => $id,
+                                'user_id' => $attendance->user_id,
+                                'type' => 'break_update',
+                                'original_break_id' => $breakId, // ★ break IDを記録 ★
+                                'requested_time' => null, // ★ requested_time はNULLにする ★
+                                'requested_data' => json_encode([ // ★ requested_dataにJSONで保存 ★
+                                    'start' => $date . ' ' . $requestedStart,
+                                    'end' => $date . ' ' . $requestedEnd,
+                                ]),
+                                'reason' => $request->input('remarks'), // 備考欄の値を理由として共有
+                                'status' => 'pending',
+                            ]);
+                            $hasRequested = true;
+                        }
                     }
                 }
             }
         }
-    }
 
-    // 5. ★★★ 新規追加の休憩時間の申請ロジックを追加（休憩N+1） ★★★
-    if ($request->has('new_break') && $request->input('new_break.start_time') && $request->input('new_break.end_time')) {
-        $requestedStart = $request->input('new_break.start_time');
-        $requestedEnd = $request->input('new_break.end_time');
+            // 5. ★★★ 新規追加の休憩時間の申請ロジックを修正 ★★★
+            // $request->input('new_break')が配列であり、かつstart_timeとend_timeの両方が入力されているかチェ// 5. 新規追加の休憩時間の申請ロジック (上書き方式)
+        if (
+            $request->filled('new_break') &&
+            is_array($request->input('new_break')) &&
+            !empty($request->input('new_break.start_time')) &&
+            !empty($request->input('new_break.end_time'))
+        ) {
+            $requestedStart = $request->input('new_break.start_time');
+            $requestedEnd = $request->input('new_break.end_time');
 
-        StampCorrectionRequest::create([
-            'attendance_id' => $id,
-            'user_id' => $attendance->user_id,
-            'type' => 'break_add',
-            'original_break_id' => null, // ★ 新規なのでNULL ★
-            'requested_time' => null, // ★ requested_time はNULLにする ★
-            'requested_data' => json_encode([ // ★ requested_dataにJSONで保存 ★
-                'start' => $date . ' ' . $requestedStart,
-                'end' => $date . ' ' . $requestedEnd,
-            ]),
-            'reason' => $request->input('remarks'),
-            'status' => 'pending',
-        ]);
-        $hasRequested = true;
+            // 保存するデータの配列を定義
+            $dataToSave = [
+                'attendance_id' => $id,
+                'user_id' => $attendance->user_id,
+                'type' => 'break_add',
+                'original_break_id' => null,
+                'requested_time' => null,
+                'requested_data' => json_encode([
+                    'start' => $date . ' ' . $requestedStart,
+                    'end' => $date . ' ' . $requestedEnd,
+                ]),
+                'reason' => $request->input('remarks'),
+                'status' => 'pending', // ステータスは保留中
+            ];
+
+            // 1. 既存の保留中の同じ申請を検索
+            $existingRequest = StampCorrectionRequest::where('attendance_id', $id)
+                ->where('type', 'break_add')
+                ->where('status', 'pending')
+                ->first(); // exists() ではなく first() でレコードを取得
+
+            if ($existingRequest) {
+                // 2. 既に申請がある場合、そのレコードを最新の内容で更新（上書き）する
+                $existingRequest->update($dataToSave);
+            } else {
+                // 3. 申請がない場合、新規作成する
+                StampCorrectionRequest::create($dataToSave);
+            }
+            
+            $hasRequested = true;
         }
 
 
-    if ($hasRequested) {
-        return redirect()->back()->with('success', '勤怠修正の申請を送信しました。');
+        if ($hasRequested) {
+            return redirect()->back()->with('success', '勤怠修正の申請を送信しました。');
+        }
+
+        return redirect()->back()->with('error', '修正内容に変更がないか、既に申請中です。');
     }
-
-    return redirect()->back()->with('error', '修正内容に変更がないか、既に申請中です。');
-}
-    // requestCorrectionを記述したのでコメントアウト
-    // public function correctAttendance(Request $request, $id)
-    // {
-    //     // 勤怠記録を取得
-    //     $attendance = Attendance::findOrFail($id);
-
-    //     // 勤怠記録が既に承認待ちまたは承認済みの場合、修正を許可しない
-    //     if ($attendance->status !== 'pending' && $attendance->status !== 'approved') {
-    //          // 'pending'と'approved'以外のステータスの場合、修正を拒否する
-    //          // 実際のロジックに応じて条件を変更してください
-    //         return redirect()->back()->with('error', 'この勤怠記録は修正できません。');
-    //     }
-
-    //     // 既存の勤怠記録を更新
-    //     $attendance->clock_in = Carbon::parse($request->input('clock_in'));
-    //     $attendance->clock_out = Carbon::parse($request->input('clock_out'));
-    //     $attendance->remarks = $request->input('remarks'); // 備考欄の値を保存
-    //     $attendance->status = 'pending'; // ステータスを「承認待ち」に設定
-    //     $attendance->save();
-
-    //     // 既存の休憩時間を更新
-    //     if ($request->has('breaks')) {
-    //         foreach ($request->input('breaks') as $breakId => $breakTimes) {
-    //             $break = BreakModel::findOrFail($breakId);
-    //             $break->start_time = Carbon::parse($breakTimes['start_time']);
-    //             $break->end_time = Carbon::parse($breakTimes['end_time']);
-    //             $break->save();
-    //         }
-    //     }
-
-    //     // 新しい休憩時間を追加
-    //     if ($request->has('new_break') && $request->input('new_break.start_time') && $request->input('new_break.end_time')) {
-    //         BreakModel::create([
-    //             'attendance_id' => $attendance->id,
-    //             'start_time' => Carbon::parse($request->input('new_break.start_time')),
-    //             'end_time' => Carbon::parse($request->input('new_break.end_time')),
-    //         ]);
-    //     }
-
-    //     // 総休憩時間と総勤務時間を再計算して保存
-    //     $this->updateWorkAndBreakTimes($attendance);
-
-    //     return redirect()->back()->with('success', '勤怠修正申請が完了しました。');
-    // }
 
         protected function updateWorkAndBreakTimes(Attendance $attendance)
     {
