@@ -4,7 +4,7 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/detail-attendance.css') }}">
-<style>
+<!-- <style>
   /* 修正箇所をハイライト表示 */
   .requested-time {
     background-color: #fff3cd;
@@ -30,28 +30,12 @@
     color: #666;
     font-weight: bold;
   }
-  
-  .approval-button {
-    background: #28a745;
-    color: #fff;
-    border: none;
-    padding: 12px 40px;
-    margin-top: 10px;
-    font-size: 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  
-  .approval-button:hover {
-    background: #218838;
-  }
-  
+
   .new-break-label {
     color: #28a745;
     font-weight: bold;
   }
-</style>
+</style> -->
 @endsection
 
 @section('content')
@@ -87,26 +71,28 @@
         </tr>
         <tr>
           <th>出勤・退勤</th>
+          
           <td>
-            <div class="time-change">
-              @if($requests['clock_in'])
-                <span class="original-time">{{ $attendance->clock_in->format('H:i') }}</span>
-                <span class="arrow">→</span>
-                <span class="requested-time">{{ \Carbon\Carbon::parse($requests['clock_in']->requested_time)->format('H:i') }}</span>
-              @else
-                <span class="detail-time">{{ $attendance->clock_in->format('H:i') }}</span>
-              @endif
-              <span style="margin: 0 8px;">〜</span>
-              @if($requests['clock_out'])
-                <span class="original-time">{{ optional($attendance->clock_out)->format('H:i') }}</span>
-                <span class="arrow">→</span>
-                <span class="requested-time">{{ \Carbon\Carbon::parse($requests['clock_out']->requested_time)->format('H:i') }}</span>
-              @else
-                <span class="detail-time">{{ optional($attendance->clock_out)->format('H:i') }}</span>
-              @endif
-            </div>
+            @if($requests['clock_in'])
+              <span class="original-time">{{ $attendance->clock_in->format('H:i') }}</span>
+              <span class="arrow">→</span>
+              <span class="requested-time">{{ \Carbon\Carbon::parse($requests['clock_in']->requested_time)->format('H:i') }}</span>
+            @else
+              <span class="detail-time">{{ $attendance->clock_in->format('H:i') }}</span>
+            @endif
+
+            <span style="margin: 0 8px;">〜</span>
+
+            @if($requests['clock_out'])
+              <span class="original-time">{{ optional($attendance->clock_out)->format('H:i') }}</span>
+              <span class="arrow">→</span>
+              <span class="requested-time">{{ \Carbon\Carbon::parse($requests['clock_out']->requested_time)->format('H:i') }}</span>
+            @else
+              <span class="detail-time">{{ optional($attendance->clock_out)->format('H:i') }}</span>
+            @endif
           </td>
         </tr>
+        
 
 {{-- 既存の休憩を表示（修正申請があれば変更内容を表示） --}}
         @foreach($attendance->breaks as $index => $break)
@@ -172,7 +158,7 @@
     </div>
 
     <div class="form-actions">
-      <button type="submit" class="approval-button">承認する</button>
+      <button type="submit" class="approval-button">承認</button>
     </div>
   </form>
 </div>
