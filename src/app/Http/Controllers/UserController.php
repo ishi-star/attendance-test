@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use Carbon\Carbon;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\LoginRequest;
 
 class UserController extends Controller
 {
@@ -18,13 +20,8 @@ class UserController extends Controller
     }
 
     // ユーザー登録処理
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
 
         $user = User::create([
             'name' => $request->name,
@@ -44,7 +41,7 @@ class UserController extends Controller
     }
 
     // ログイン処理
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
         $request->validate([
             'email' => 'required|string|email',

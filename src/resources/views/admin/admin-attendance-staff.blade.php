@@ -55,7 +55,7 @@
                 </td>
                 <td class="table-cell">
                     {{-- 勤怠詳細画面へ遷移 --}}
-                    <a href="{{ route('admin.attendance.detail', ['id' => $attendance->id]) }}">修正</a>
+                    <a href="{{ route('admin.attendance.detail', ['id' => $attendance->id]) }}">詳細</a>
                 </td>
             </tr>
             @empty
