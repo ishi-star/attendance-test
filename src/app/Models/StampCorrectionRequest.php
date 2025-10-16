@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class StampCorrectionRequest extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'attendance_id',
         'user_id',
@@ -14,11 +16,13 @@ class StampCorrectionRequest extends Model
         'requested_time',
         'requested_data',
         'status',
-        'reason'
+        'reason',
+        'original_break_id',
     ];
 
     protected $casts = [
         'requested_time' => 'datetime',
+        'requested_data' => 'array',
     ];
 
     public function attendance()
