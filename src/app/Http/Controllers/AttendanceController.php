@@ -11,6 +11,7 @@ use Carbon\CarbonImmutable;
 use Carbon\Localization\CarbonLocale;
 use Carbon\CarbonPeriod;
 use App\Models\StampCorrectionRequest;
+use App\Http\Requests\DetailAttendanceRequest;
 
 class AttendanceController extends Controller
 {
@@ -216,10 +217,10 @@ class AttendanceController extends Controller
     /**
  * 勤怠修正を申請テーブルに記録する
  */
-    public function requestCorrection(Request $request, $id)
+    public function requestCorrection(DetailAttendanceRequest $request, $id)
     {
     // ★★★ この dd($request->all()); を削除する ★★★
-    // dd($request->all()); 
+    // dd($request->all());
     // ★★★ 削除後、必ず保存してください ★★★
         // 1. バリデーション
         $request->validate([
@@ -374,7 +375,7 @@ class AttendanceController extends Controller
         return redirect()->back()->with('error', '修正内容に変更がないか、既に申請中です。');
     }
 
-        protected function updateWorkAndBreakTimes(Attendance $attendance)
+    protected function updateWorkAndBreakTimes(Attendance $attendance)
     {
         // 総休憩時間を計算
         $totalBreakMinutes = $attendance->breaks()->whereNotNull('end_time')->get()->sum(function ($break) {
