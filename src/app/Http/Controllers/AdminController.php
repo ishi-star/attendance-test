@@ -196,14 +196,18 @@ class AdminController extends Controller
         // 指定されたスタッフの、指定された月の勤怠データを全て取得
         $attendances = Attendance::where('user_id', $id)
             ->whereBetween('clock_in', [$startDate, $endDate])
-            ->with('breaks') // 休憩時間をまとめてロード
+            ->with('breaks')
             ->orderBy('clock_in', 'asc')
-            ->get();
+            ->get()
+            ->keyBy(fn($a) => $a->clock_in->format('Y-m-d'));
+
+        $dates = \Carbon\CarbonPeriod::create($startDate, $endDate);
 
         return view('admin.admin-attendance-staff', [
             'user' => $user,
             'targetMonth' => $targetMonth,
             'attendances' => $attendances,
+             'dates' => $dates, // ★ 追加
         ]);
     }
 

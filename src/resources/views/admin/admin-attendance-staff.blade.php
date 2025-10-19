@@ -37,32 +37,53 @@
             </tr>
         </thead>
         <tbody class="table-body">
-            @forelse($attendances as $attendance)
-            <tr class="table-row">
-                {{-- 該当日の日付を表示 --}}
-                <td class="table-cell">{{ $attendance->clock_in->format('j日') }}</td>
-                <td class="table-cell">{{ $attendance->clock_in->format('H:i') }}</td>
-                <td class="table-cell">
-                    {{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}
-                </td>
-                <td class="table-cell">
-                    {{-- 休憩時間表示 (計算ロジックは既存のものを流用) --}}
-                    {{ floor($attendance->total_break_time / 60) }}:{{ sprintf('%02d', $attendance->total_break_time % 60) }}
-                </td>
-                <td class="table-cell">
-                    {{-- 実労働時間表示 (計算ロジックは既存のものを流用) --}}
-                    {{ floor($attendance->work_time / 60) }}:{{ sprintf('%02d', $attendance->work_time % 60) }}
-                </td>
-                <td class="table-cell">
-                    {{-- 勤怠詳細画面へ遷移 --}}
-                    <a href="{{ route('admin.attendance.detail', ['id' => $attendance->id]) }}">詳細</a>
-                </td>
-            </tr>
-            @empty
-            <tr class="table-row">
-                <td class="table-cell" colspan="6">この月には勤怠記録がありません。</td>
-            </tr>
-            @endforelse
+            @php
+                // 月初〜月末をループ
+                $startDate = $targetMonth->copy()->startOfMonth();
+                $endDate = $targetMonth->copy()->endOfMonth();
+
+                // 日付キーで勤怠データを整理
+                $attendances = $attendances->keyBy(fn($a) => $a->clock_in->format('Y-m-d'));
+            @endphp
+
+            @for ($date = $startDate->copy(); $date <= $endDate; $date->addDay())
+                @php
+                    $attendance = $attendances->get($date->format('Y-m-d'));
+                @endphp
+
+                <tr class="table-row">
+                    <td class="table-cell">
+                            {{ $date->format('m/d') }}
+                            ({{ ['日','月','火','水','木','金','土'][$date->dayOfWeek] }})
+                    </td>
+
+                    <td class="table-cell">
+                        {{ $attendance?->clock_in?->format('H:i') ?? '' }}
+                    </td>
+
+                    <td class="table-cell">
+                        {{ $attendance?->clock_out?->format('H:i') ?? '' }}
+                    </td>
+
+                    <td class="table-cell">
+                        @if ($attendance)
+                            {{ floor($attendance->total_break_time / 60) }}:{{ sprintf('%02d', $attendance->total_break_time % 60) }}
+                        @endif
+                    </td>
+
+                    <td class="table-cell">
+                        @if ($attendance)
+                            {{ floor($attendance->work_time / 60) }}:{{ sprintf('%02d', $attendance->work_time % 60) }}
+                        @endif
+                    </td>
+
+                    <td class="table-cell">
+                        @if ($attendance)
+                            <a href="{{ route('admin.attendance.detail', ['id' => $attendance->id]) }}">詳細</a>
+                        @endif
+                    </td>
+                </tr>
+            @endfor
         </tbody>
     </table>
 </div>
