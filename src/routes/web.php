@@ -58,6 +58,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/attendance/detail/{id}', [AttendanceController::class, 'showAttendanceDetail']);
     // 勤怠修正のルート
     Route::post('/attendance/request/{id}', [AttendanceController::class, 'requestCorrection'])->name('attendance.request');
+    // 申請一覧画面を表示 (showRequestList)
+    Route::get('/stamp_correction_request/list', [AttendanceController::class, 'showRequestList'])
+        ->name('request.list');
+    // ★★★ 申請詳細画面のルートを追加 ★★★
+    Route::get('/stamp_correction_request/detail/{id}', [AttendanceController::class, 'showRequestDetail'])
+        ->name('request.detail');
     // ログアウトルート
     Route::post('/logout', function () {
         Auth::logout();

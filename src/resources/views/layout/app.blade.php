@@ -21,7 +21,7 @@
       <ul class="nav__list">
         <li class="nav__item"><a href="/attendance">勤怠</a></li>
         <li class="nav__item"><a href="/attendance/list">勤怠一覧</a></li>
-        <li class="nav__item"><a href="/stamp_correction_request/list">申請</a></li>
+        <li class="nav__item"><a href="{{ route('request.list') }}">申請</a></li>
         <li class="nav__item">
           <form action="{{ route('logout') }}" method="POST">
             @csrf

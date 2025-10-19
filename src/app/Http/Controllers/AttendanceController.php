@@ -375,6 +375,55 @@ class AttendanceController extends Controller
         return redirect()->back()->with('error', '修正内容に変更がないか、既に申請中です。');
     }
 
+/**
+     * 申請一覧画面を表示する (PG06)
+     * ルート名: request.list
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showRequestList()
+    {
+        // 1. ログイン中のユーザーIDを取得
+        $userId = Auth::id();
+
+        // 2. 承認待ちの申請を取得
+        // 自分の申請(user_id)で、ステータスが'pending'（保留中）のものを取得
+        $pendingRequests = StampCorrectionRequest::where('user_id', $userId)
+            ->where('status', 'pending')
+            ->with('attendance') // 関連する勤怠情報も取得
+            ->latest() // 作成日が新しい順に並び替え
+            ->get();
+
+        // 3. 承認済みの申請を取得
+        // 自分の申請(user_id)で、ステータスが'approved'（承認済み）のものを取得
+        $approvedRequests = StampCorrectionRequest::where('user_id', $userId)
+            ->where('status', 'approved')
+            ->with('attendance')
+            ->latest('updated_at') // 承認（更新）日が新しい順に並び替え
+            ->get();
+
+        // 4. Bladeテンプレートにデータを渡して表示 (ファイル名: stamp-correction-request.blade.php を想定)
+        return view('auth.stamp-correction-request', compact('pendingRequests', 'approvedRequests'));
+    }
+
+    /**
+     * 申請詳細画面を表示する
+     * ルート名: request.detail
+     *
+     * @param int $id 申請ID (StampCorrectionRequestのID)
+     * @return \Illuminate\View\View
+     */
+    public function showRequestDetail($id)
+    {
+        // ログインユーザー自身の、指定されたIDの申請レコードを取得
+        $request = StampCorrectionRequest::where('user_id', Auth::id())
+            ->with('attendance')
+            ->findOrFail($id); // 見つからない場合は404エラー
+
+        // 申請詳細画面のBladeファイルにデータを渡す (ファイル名: auth.request-detail を想定)
+        return view('auth.request-detail', compact('request'));
+    }
+
     protected function updateWorkAndBreakTimes(Attendance $attendance)
     {
         // 総休憩時間を計算
