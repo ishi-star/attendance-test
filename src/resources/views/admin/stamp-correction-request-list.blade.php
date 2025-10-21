@@ -4,68 +4,8 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/list-attendance.css') }}">
-<style>
-    /* 画像に合わせてタブ構造を再現するための簡易CSS */
-    .request-tabs {
-        display: flex;
-        max-width: 800px; /* テーブル幅に合わせる */
-        margin: 0 auto;
-        position: relative;
-    }
-    .request-tab {
-        padding: 10px 20px;
-        margin-bottom: 20px;
-        cursor: pointer;
-        border-bottom: none;
-        /* background: #f9f9f9;  */
-        margin-right: -1px;
-    }
-    .request-tabs::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    margin-bottom: 10px;
-    background-color: #6c6c6cff; /* ←赤線の色（画像のようなピンク寄り） */
-    }
-    .request-tab.active {
-        font-weight: bold;
-        z-index: 10;
-        position: relative;
-    }
-    .attendance-list-container {
-        max-width: 800px;
-        margin: 0 auto 50px;
-    }
-    .attendance-table th.table-cell {
-        text-align: center;
-    }
-    .attendance-table td.table-cell {
-        text-align: center;
-    }
-    .attendance-table td.table-cell:nth-child(2) {
-        text-align: left; /* 名前だけ左寄せ */
-    }
-    /* 申請理由のセルだけテキストを左寄せ */
-    .attendance-table th:nth-child(4),
-    .attendance-table td:nth-child(4) {
-        text-align: left;
-    }
-     /* 承認済みテーブルを非表示にする初期設定 */
-    #approved-requests {
-        display: none;
-    }
-    .table-cell {
-    border: 1px solid #ccc;
-    border-left: none;
-    border-right: none;
-    padding: 12px 10px;
-    text-align: center;
-    }
+<link rel="stylesheet" href="{{ asset('css/tab.css') }}">
 
-</style>
 @endsection
 
 @section('content')
@@ -74,7 +14,7 @@
 {{-- タブ構造 --}}
 <div class="request-tabs">
     <div class="request-tab active" data-tab="pending">承認待ち</div>
-    <div class="request-tab" data-tab="approved">承認済み</div> 
+    <div class="request-tab" data-tab="approved">承認済み</div>
 </div>
 
 <div class="attendance-list-container">

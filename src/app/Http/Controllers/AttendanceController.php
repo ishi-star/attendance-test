@@ -384,7 +384,8 @@ class AttendanceController extends Controller
     public function showRequestList()
     {
         // 1. ログイン中のユーザーIDを取得
-        $userId = Auth::id();
+        $user = Auth::user();
+        $userId = $user->id; // user_idは $user->id から取得する
 
         // 2. 承認待ちの申請を取得
         // 自分の申請(user_id)で、ステータスが'pending'（保留中）のものを取得
@@ -403,7 +404,7 @@ class AttendanceController extends Controller
             ->get();
 
         // 4. Bladeテンプレートにデータを渡して表示 (ファイル名: stamp-correction-request.blade.php を想定)
-        return view('auth.stamp-correction-request', compact('pendingRequests', 'approvedRequests'));
+        return view('auth.stamp-correction-request', compact('pendingRequests', 'approvedRequests', 'user'));
     }
 
     /**
@@ -415,13 +416,25 @@ class AttendanceController extends Controller
      */
     public function showRequestDetail($id)
     {
-        // ログインユーザー自身の、指定されたIDの申請レコードを取得
-        $request = StampCorrectionRequest::where('user_id', Auth::id())
-            ->with('attendance')
+    // ログインユーザー自身の、指定されたIDの申請レコードを取得
+        // 関連する勤怠情報も一緒に取得
+        $stampCorrectionRequest = StampCorrectionRequest::where('user_id', Auth::id())
+            ->with('attendance.breaks')
             ->findOrFail($id); // 見つからない場合は404エラー
 
-        // 申請詳細画面のBladeファイルにデータを渡す (ファイル名: auth.request-detail を想定)
-        return view('auth.request-detail', compact('request'));
+        // 申請情報から元の勤怠レコードを取得
+        $attendance = $stampCorrectionRequest->attendance;
+
+        // 承認待ちの申請を取得（この画面では通常不要ですが、勤怠詳細画面の流用を想定して変数名を合わせて渡します）
+        $pendingRequests = StampCorrectionRequest::where('attendance_id', $attendance->id)
+            ->where('status', 'pending')
+            ->get();
+
+        // ★★★ 修正箇所 ★★★
+        // 勤怠詳細画面（auth.detail-attendance）を再利用し、
+        // $stampCorrectionRequest も渡すことで、Blade側で表示を制御できるようにする。
+        return view('auth.detail-attendance', compact('attendance', 'pendingRequests', 'stampCorrectionRequest'));
+        // ★★★ 修正箇所ここまで ★★★
     }
 
     protected function updateWorkAndBreakTimes(Attendance $attendance)

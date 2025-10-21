@@ -41,6 +41,6 @@
     <main>
         @yield('content')
     </main>
-    @yield('scripts') 
+    @yield('scripts')
 </body>
 </html>

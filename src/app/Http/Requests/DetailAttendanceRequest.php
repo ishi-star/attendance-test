@@ -10,7 +10,7 @@ class DetailAttendanceRequest extends FormRequest
      * バリデーションが最初に見つかった失敗で停止するかどうか。
      * * @var bool
      */
-    protected $stopOnFirstFailure = true;
+    protected $stopOnFirstFailure = false;
 
     public function authorize()
     {

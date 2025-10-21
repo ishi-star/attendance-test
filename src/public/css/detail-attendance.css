@@ -134,3 +134,64 @@ td {
 .approval-button:hover {
   background: #555;
 }
+
+.error-message {
+  color: red;
+  font-size: 0.85em;
+  margin-top: 5px;
+}
+
+.is-invalid {
+  border: 1px solid red;
+  /* エラー発生時に入力欄の枠を赤くする例 */
+}
+
+/* 申請詳細モードの際の入力欄のスタイル */
+.is-readonly-mode input[type="time"],
+.is-readonly-mode textarea {
+  background-color: #f5f5f5;
+  /* 読み取り専用の背景色 */
+  cursor: default;
+  /* カーソルをデフォルトに */
+}
+
+.alert_p {
+  padding: 10px;
+  color: rgb(204, 49, 49);
+
+}
+
+/* 申請詳細モードの際の入力欄のスタイル */
+.is-readonly-mode input[type="time"],
+.is-readonly-mode textarea {
+  /* 読み取り専用の背景色 (薄いグレーなど) */
+  background-color: #fff;
+
+  /* カーソルをデフォルト（矢印）に */
+  cursor: default;
+
+  /* ★★★ 追加・修正: 枠線を完全に消す ★★★ */
+  border: none;
+
+  /* ★★★ 追加・修正: 影も消す（もしあれば） ★★★ */
+  box-shadow: none;
+
+  /* セル内の余白を確保するため、paddingは残すか調整する */
+  /* 例：paddingを上下3px、左右0pxに調整 */
+
+  /* 幅を100%にして、テキストが収まるようにする */
+  width: 100%;
+}
+
+/* 備考欄も同様にスタイルを適用 */
+.is-readonly-mode textarea.remarks-input {
+  /* 必要に応じて、高さやフォントサイズも調整 */
+  resize: none;
+  /* リサイズハンドルを非表示 */
+}
+
+/* 値がない場合のプレースホルダーは非表示にする (見た目をきれいにするため) */
+.is-readonly-mode input::placeholder,
+.is-readonly-mode textarea::placeholder {
+  color: transparent;
+}

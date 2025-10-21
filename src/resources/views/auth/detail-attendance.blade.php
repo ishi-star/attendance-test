@@ -4,37 +4,54 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/detail-attendance.css') }}">
-{{-- 必要に応じて、is-invalidクラスのエラー時のスタイルをここに追記してください --}}
-<style>
-.error-message {
-    color: red;
-    font-size: 0.85em;
-    margin-top: 5px;
-}
-.is-invalid {
-    border: 1px solid red; /* エラー発生時に入力欄の枠を赤くする例 */
-}
-</style>
+
 @endsection
 
 @section('content')
+
+    {{-- 💡 isReadOnly フラグと備考の値の定義を挿入 --}}
+    @php
+        // $stampCorrectionRequest が存在すれば true (申請詳細表示モード)
+        // 変数が定義されていない場合に備えて isset() でチェックする
+        $isReadOnly = isset($stampCorrectionRequest);
+
+        // ★★★ 追加: 承認待ちフラグ ★★★
+        // statusカラムに 'pending' が設定されていると想定
+        $isPending = $isReadOnly && optional($stampCorrectionRequest)->status === 'pending';
+
+        // 申請データが存在する場合、表示すべき備考の理由 (reasonカラムを想定) を取得
+        // $stampCorrectionRequest が存在しない場合は null を使用
+        $remarksValue = $isReadOnly ? optional($stampCorrectionRequest)->reason : old('remarks');
+
+        // 変数が存在しない場合に、後のコードで参照エラーが出ないように初期化する
+        if (!$isReadOnly) {
+            $stampCorrectionRequest = null;
+        }
+    @endphp
+
+    {{-- 💡全体エラー表示 (修正申請画面でのみ表示) --}}
+    @if (!$isReadOnly && $errors->any())
+        <div class="alert alert-danger" style="color: red; margin-bottom: 20px; padding: 10px; border: 1px solid red; background-color: #fdd;">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
 <div class="detail-page-container">
     <h2 class="page-heading">勤怠詳細</h2>
 
-    <form action="{{ route('attendance.request', ['id' => $attendance->id]) }}" method="POST">
+    {{-- 💡 フォームの action とクラスを isReadOnly に応じて制御 --}}
+    <form action="{{ $isReadOnly ? '#' : route('attendance.request', ['id' => $attendance->id]) }}"
+          method="POST"
+          class="{{ $isReadOnly ? 'is-readonly-mode' : '' }} {{ $isPending ? 'is-pending-request' : '' }}">
         @csrf
 
-        {{-- 💡【修正点 1: 全体エラー表示】フォームの上部に全てのエラーメッセージを一覧で表示 --}}
-        @if ($errors->any())
-            <div class="alert alert-danger" style="color: red; margin-bottom: 20px; padding: 10px; border: 1px solid red; background-color: #fdd;">
-                <p><strong>入力内容にエラーがあります。ご確認ください。</strong></p>
-                <ul>
-                    {{-- 備考欄のエラーは個別表示に任せる場合は $errors->all() の代わりに $errors->default->all() を使う場合もありますが、ここでは全て表示します --}}
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+        {{-- 読み取り専用の場合、POSTリクエストが飛ばないように無効化 --}}
+        @if ($isReadOnly)
+            {{-- @method('GET') は不要ですが、ここでは安全のため何も設定しません --}}
         @endif
 
         <div class="card-container">
@@ -50,96 +67,123 @@
                         <span class="detail-time">{{ $attendance->clock_in->format('m月d日') }}</span>
                     </td>
                 </tr>
-                
-                {{-- 💡【修正点 2: 出勤・退勤】個別エラー表示と old() 関数 --}}
                 <tr>
                     <th>出勤・退勤</th>
                     <td>
+                        {{-- 💡 clock_inの value と disabled 属性 --}}
                         <input type="time" name="clock_in"
-                        value="{{ old('clock_in', $attendance->clock_in->format('H:i')) }}"
-                        class="time-input @error('clock_in') is-invalid @enderror">
+                        value="{{ $isReadOnly && $stampCorrectionRequest->type === 'clock_in' ? \Carbon\Carbon::parse($stampCorrectionRequest->requested_time)->format('H:i') : old('clock_in', $attendance->clock_in->format('H:i')) }}"
+                        class="time-input @error('clock_in') is-invalid @enderror"
+                        {{ $isReadOnly ? 'disabled' : '' }}>
                         〜
+                        {{-- 💡 clock_outの value と disabled 属性 --}}
                         <input type="time" name="clock_out"
-                        value="{{ old('clock_out', $attendance->clock_out ? $attendance->clock_out->format('H:i') : '') }}"
-                        class="time-input @error('clock_out') is-invalid @enderror">
-
-                        {{-- エラーメッセージを個別に表示 --}}
-                        @error('clock_in')
-                            <div class="error-message">{{ $message }}</div>
-                        @enderror
-                        @error('clock_out')
-                            <div class="error-message">{{ $message }}</div>
-                        @enderror
+                        value="{{ $isReadOnly && $stampCorrectionRequest->type === 'clock_out' ? \Carbon\Carbon::parse($stampCorrectionRequest->requested_time)->format('H:i') : old('clock_out', $attendance->clock_out ? $attendance->clock_out->format('H:i') : '') }}"
+                        class="time-input @error('clock_out') is-invalid @enderror"
+                        {{ $isReadOnly ? 'disabled' : '' }}>
                     </td>
                 </tr>
-                
-                {{-- 💡【修正点 3: 既存の休憩時間】配列のバリデーションにはドット記法を使用 --}}
+
                 @foreach($attendance->breaks as $index => $break)
                 <tr>
                     <th>休憩{{ $index + 1 }}</th>
                     <td>
-                        {{-- フィールド名: breaks.ID.start_time --}}
-                        <input type="time" name="breaks[{{ $break->id }}][start_time]"
-                            value="{{ old("breaks.{$break->id}.start_time", optional($break->start_time)->format('H:i')) }}"
-                            class="time-input @error("breaks.{$break->id}.start_time") is-invalid @enderror">
-                        〜
-                        {{-- フィールド名: breaks.ID.end_time --}}
-                        <input type="time" name="breaks[{{ $break->id }}][end_time]"
-                            value="{{ old("breaks.{$break->id}.end_time", optional($break->end_time)->format('H:i')) }}"
-                            class="time-input @error("breaks.{$break->id}.end_time") is-invalid @enderror">
+                        {{-- break_update の申請内容を取得 --}}
+                @php
+                    $isBreakUpdated = $isReadOnly && $stampCorrectionRequest->type === 'break_update' && $stampCorrectionRequest->original_break_id === $break->id;
+                    // ↓ この行か次の行あたりに怪しい空白が紛れている可能性があります
+                    $requestedData = optional($stampCorrectionRequest)->requested_data;
+                    $requestedBreakData = null;
 
-                        {{-- エラー表示 (フィールド名をドット記法で指定) --}}
-                        @error("breaks.{$break->id}.start_time")
-                            <div class="error-message">{{ $message }}</div>
-                        @enderror
-                        @error("breaks.{$break->id}.end_time")
-                            <div class="error-message">{{ $message }}</div>
-                        @enderror
+                    if ($isBreakUpdated) {
+                        if (is_string($requestedData)) {
+                            $requestedBreakData = json_decode($requestedData, true);
+                        } else {
+                            $requestedBreakData = $requestedData;
+                        }
+                    }
+                @endphp
+                        
+                        {{-- 💡 既存休憩の start_time の value と disabled 属性 --}}
+                        <input type="time" name="breaks[{{ $break->id }}][start_time]"
+                            value="{{ $isBreakUpdated ? \Carbon\Carbon::parse($requestedBreakData['start'])->format('H:i') : old("breaks.{$break->id}.start_time", optional($break->start_time)->format('H:i')) }}"
+                            class="time-input @error("breaks.{$break->id}.start_time") is-invalid @enderror"
+                            {{ $isReadOnly ? 'disabled' : '' }}>
+                        〜
+                        {{-- 💡 既存休憩の end_time の value と disabled 属性 --}}
+                        <input type="time" name="breaks[{{ $break->id }}][end_time]"
+                            value="{{ $isBreakUpdated ? \Carbon\Carbon::parse($requestedBreakData['end'])->format('H:i') : old("breaks.{$break->id}.end_time", optional($break->end_time)->format('H:i')) }}"
+                            class="time-input @error("breaks.{$break->id}.end_time") is-invalid @enderror"
+                            {{ $isReadOnly ? 'disabled' : '' }}>
+
                     </td>
                 </tr>
                 @endforeach
 
-                {{-- 💡【修正点 4: 新規追加の休憩時間】個別エラー表示と old() 関数 --}}
-                <tr>
-                    <th>休憩{{ $attendance->breaks->count() + 1 }}</th>
-                    <td>
-                        {{-- フィールド名: new_break.start_time --}}
-                        <input type="time" name="new_break[start_time]"
-                            value="{{ old('new_break.start_time') }}"
-                            class="time-input @error('new_break.start_time') is-invalid @enderror">
-                        〜
-                        {{-- フィールド名: new_break.end_time --}}
-                        <input type="time" name="new_break[end_time]"
-                            value="{{ old('new_break.end_time') }}"
-                            class="time-input @error('new_break.end_time') is-invalid @enderror">
+                {{-- 💡 新規追加休憩の表示ロジック --}}
+                @php
+                    $isBreakAdded = $isReadOnly && $stampCorrectionRequest->type === 'break_add';
 
-                        {{-- エラー表示 --}}
-                        @error('new_break.start_time')
-                            <div class="error-message">{{ $message }}</div>
-                        @enderror
-                        @error('new_break.end_time')
-                            <div class="error-message">{{ $message }}</div>
-                        @enderror
+                    $newBreakRequestedData = optional($stampCorrectionRequest)->requested_data;
+                    $newBreakData = null;
+                    
+                    if ($isBreakAdded) {
+                        if (is_string($newBreakRequestedData)) {
+                            $newBreakData = json_decode($newBreakRequestedData, true);
+                        } else {
+                            $newBreakData = $newBreakRequestedData;
+                        }
+                    }
+                @endphp
+                
+                {{-- 通常モード（$isReadOnlyがfalse）か、新規追加の申請（$isBreakAddedがtrue）の場合に表示 --}}
+                @if (!$isReadOnly || $isBreakAdded)
+                <tr>
+                    <th>休憩{{ $attendance->breaks->count() + 1 }}
+                        @if($isBreakAdded) <span style="color: red;">(申請内容)</span> @endif
+                    </th>
+                    <td>
+                        {{-- 💡 新規休憩の start_time の value と disabled 属性 --}}
+                        <input type="time" name="new_break[start_time]"
+                            value="{{ $isBreakAdded ? \Carbon\Carbon::parse($newBreakData['start'])->format('H:i') : old('new_break.start_time') }}"
+                            class="time-input @error('new_break.start_time') is-invalid @enderror"
+                            {{ $isReadOnly ? 'disabled' : '' }}>
+                        〜
+                        {{-- 💡 新規休憩の end_time の value と disabled 属性 --}}
+                        <input type="time" name="new_break[end_time]"
+                            value="{{ $isBreakAdded ? \Carbon\Carbon::parse($newBreakData['end'])->format('H:i') : old('new_break.end_time') }}"
+                            class="time-input @error('new_break.end_time') is-invalid @enderror"
+                            {{ $isReadOnly ? 'disabled' : '' }}>
+
                     </td>
                 </tr>
-                
-                {{-- 💡【修正点 5: 備考】個別エラー表示と old() 関数 --}}
+                @endif
+
                 <tr>
                     <th>備考</th>
                     <td>
-                        <textarea name="remarks" class="remarks-input @error('remarks') is-invalid @enderror" placeholder="修正理由を記入してください">{{ old('remarks') }}</textarea>
+                        {{-- 💡 備考の value と disabled 属性 --}}
+                        <textarea name="remarks" 
+                                  class="remarks-input @error('remarks') is-invalid @enderror" 
+                                  placeholder="修正理由を記入してください"
+                                  {{ $isReadOnly ? 'disabled' : '' }}
+                        >{{ $remarksValue }}</textarea>
 
-                        {{-- エラー表示 --}}
-                        @error('remarks')
-                            <div class="error-message">{{ $message }}</div>
-                        @enderror
                     </td>
                 </tr>
             </table>
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="correction-button">修正</button>
+            {{-- 💡 読み取り専用の場合はボタンを非表示にする --}}
+            @if (!$isReadOnly)
+                <button type="submit" class="correction-button">修正</button>
+            @endif
+                @if ($isReadOnly)
+        <div class="alert alert-info">
+            <p class="alert_p">*承認待ちのため修正はできません。</p>
+        </div>
+    @endif
         </div>
     </form>
 </div>

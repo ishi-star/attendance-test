@@ -1,11 +1,84 @@
+/* ==================================== */
+/* ベーススタイル */
+/* ==================================== */
 body {
-  background-color: #cacaca;
+  background-color: #ececec;
   margin: 0;
   padding: 0;
 }
+.list-heading {
+  max-width: 800px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px auto;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 10px 40px;
+  padding-left: 15px;
+  /* 左側に5pxの太さの青い線を入れる */
+  border-left: 5px solid #444;
+  /* 太線と文字の間に少しスペースを空ける */
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+/* コンテナの背景色を透明にし、ヘッダーとテーブルボディの間に隙間を空ける */
+.attendance-list-container {
+  max-width: 840px;
+  margin: 0 auto;
+  /* 背景色を透明にするか、または削除し、各カードの背景色のみ表示させる */
+  background-color: transparent;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* ==================================== */
+/* テーブル本体 */
+/* ==================================== */
+.attendance-table {
+  width: 100%;
+  border-collapse: separate;
+  font-size: 14px;
+  /* 行間の隙間を設定 */
+  border-spacing: 0 2px;
+}
+
+/* ヘッダーの調整 */
+.table-header th {
+  padding: 10px 10px;
+  color: #555;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: none;
+}
+
+.table-cell {
+  /* 既存の border を完全に削除 */
+  border: none;
+  padding: 10px 10px;
+  text-align: center;
+  background-color: #ffffff;
+  border-left: none;
+  border-right: none;
+}
+
+/* ホバー効果をセルに適用 (変更なし) */
+.table-body .table-row:hover .table-cell {
+  background-color: #e2f2ff;
+}
+
+/* 詳細リンクのスタイル (変更なし) */
+.table-cell a {
+  color: #007bff;
+  text-decoration: none;
+
+  font-weight: bold;
+}
 
 .month-navigation {
-  max-width: 900px;
+  max-width: 800px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -17,107 +90,24 @@ body {
   padding: 10px 40px;
 }
 
+
+
 .current-month {
-  /* カレンダー画像を背景として設定 */
+  /* カレンダー画像 */
   background-image: url(../img/calender.png);
   background-repeat: no-repeat;
-  /* 画像の繰り返しを防ぐ */
   background-position: left center;
-  /* 画像を左端、中央に配置 */
   background-size: 16px;
-  /* 画像のサイズを調整 */
-
-  /* テキストと画像の間にスペースを作る */
   padding-left: 25px;
-  /* 画像の幅+余白分を確保 */
-
   /* テキストのフォントスタイルを調整 */
   font-size: 1.2rem;
   font-weight: bold;
   color: #333;
+
 }
-
-.list__date {
-  /* カレンダー画像を背景として設定 */
-    background-image: url(../img/calender.png);
-    background-repeat: no-repeat;
-    /* 画像の繰り返しを防ぐ */
-    background-position: left center;
-    /* 画像を左端、中央に配置 */
-    background-size: 16px;
-    /* 画像のサイズを調整 */
-
-    /* テキストと画像の間にスペースを作る */
-    padding-left: 25px;
-    /* 画像の幅+余白分を確保 */
-
-    /* テキストのフォントスタイルを調整 */
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #333;
-  }
-
-.month-link {
-  text-decoration: none;
-  color: #333;
-  /* リンクの文字色を調整する場合 */
+.table-header th:first-child {
+  border-top-left-radius: 8px;
 }
-
-.attendance-list-container {
-  max-width: 900px;
-  margin: 0 auto;
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 30px;
-}
-
-.list-heading {
-  text-align: center;
-  font-size: 28px;
-  font-weight: 600;
-  color: #444;
-  margin-bottom: 25px;
-}
-
-.attendance-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.table-header {
-  background-color: #e9ecef;
-}
-
-.table-cell {
-  border: 1px solid #dee2e6;
-  border-left: none;
-      /* 左側の縦線を非表示 */
-  border-right: none;
-      /* 右側の縦線を非表示 */
-  padding: 12px 10px;
-  text-align: center;
-}
-
-.table-header .table-cell {
-  font-weight: bold;
-  color: #555;
-}
-
-.table-row:nth-child(even) {
-  background-color: #f8f9fa;
-}
-
-.table-body .table-row:hover {
-  background-color: #e2f2ff;
-}
-
-.detail-link {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.detail-link:hover {
-  text-decoration: underline;
+.table-header th:last-child {
+  border-top-right-radius: 8px;
 }
