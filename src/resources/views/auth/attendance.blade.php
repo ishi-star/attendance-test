@@ -8,9 +8,7 @@
 
 @section('content')
 <div class="attendance-container">
-    @if(session('message'))
-    <p class="message">{{ session('message') }}</p>
-    @endif
+
     <div class="attendance-card">
         @if(!$attendance)
             <p class="attendance-status">勤務外</p>
@@ -54,6 +52,9 @@
                 {{ $attendance->clock_in->locale('ja')->translatedFormat('Y年n月j日')}} ({{ $dayOfWeek }})
             </p>
             <p class="attendance-time">{{ $attendance->clock_out->format('H:i') }}</p>
+            @if(session('message'))
+            <p class="message message--center-card">{{ session('message') }}</p> 
+            @endif
         @endif
     </div>
 </div>
