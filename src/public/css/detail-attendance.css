@@ -20,7 +20,7 @@ input[type="time"]::-ms-reveal {
 }
 
 body {
-  background-color: #cacaca;
+  background-color: #ececec;
   margin: 0;
   padding: 0;
 }
@@ -44,23 +44,37 @@ td {
 }
 
 .card-container {
-  background: #fff;
-  border-radius: 12px;
-  padding: 24px 48px;
-}
+  max-width: 840px;
+    margin: 0 auto;
+    /* 背景色を透明にするか、または削除し、各カードの背景色のみ表示させる */
+    background-color: transparent;
+    border-radius: 8px;
+    padding: 20px;
+    overflow: hidden;
+  }
+
 
 .detail-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-  margin-right: 100px;
+  background-color: #fff;
+  font-size: 14px;
+  border-radius: 8px;
 }
 
 .detail-table tr {
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 2px solid #ececec;
   /* 行全体に線 */
+  background-color: transparent;
 }
-
+.detail-table th,
+.detail-table td {
+  /* ★ 修正 ★: セル個別の背景色を透明に（または白に統一）し、枠線を削除 */
+  background: transparent;
+  border: none;
+  padding: 14px 15px;
+  /* 適切な余白 */
+  vertical-align: middle;
+}
 .detail-table th {
   width: 25%;
   text-align: left;
@@ -194,4 +208,27 @@ td {
 .is-readonly-mode input::placeholder,
 .is-readonly-mode textarea::placeholder {
   color: transparent;
+}
+/* 1. 一番上の行の左上と右上の角丸 */
+.detail-table tr:first-child th:first-child {
+  border-top-left-radius: 8px;
+  /* カードの左上の角 */
+}
+
+.detail-table tr:first-child td:last-child {
+  border-top-right-radius: 8px;
+  /* カードの右上の角 */
+}
+
+/* 2. 一番下の行の左下と右下の角丸 */
+.detail-table tr:last-child th:first-child {
+  border-bottom-left-radius: 8px;
+  /* カードの左下の角 */
+}
+
+.detail-table tr:last-child td:last-child {
+  border-bottom-right-radius: 8px;
+  /* カードの右下の角 */
+  border-bottom: none;
+  /* 最後の行の下線を消す */
 }
