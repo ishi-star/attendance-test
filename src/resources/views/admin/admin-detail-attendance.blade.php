@@ -4,7 +4,7 @@
 
 @section('css')
 {{-- CSSファイル名がdetail-attendance.cssであればそのまま --}}
-<link rel="stylesheet" href="{{ asset('css/detail-attendance.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin-detail.css') }}">
 @endsection
 
 @section('content')

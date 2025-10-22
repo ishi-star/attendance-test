@@ -1,0 +1,258 @@
+/* Chrome / Safari 用 */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+/* Firefox 用 */
+input[type="time"]::-moz-focus-inner {
+  border: 0;
+}
+
+input[type="time"]::-moz-calendar-picker-indicator {
+  display: none;
+}
+
+/* Edge (Chromium) 用 */
+input[type="time"]::-ms-clear,
+input[type="time"]::-ms-reveal {
+  display: none;
+}
+
+body {
+  background-color: #ececec;
+  margin: 0;
+  padding: 0;
+}
+
+td {
+  width: 60%;
+}
+
+.detail-page-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.page-heading {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  border-left: 5px solid #333;
+  padding-left: 10px;
+}
+
+.card-container {
+  max-width: 840px;
+  margin: 0 auto;
+  /* 背景色を透明にするか、または削除し、各カードの背景色のみ表示させる */
+  background-color: transparent;
+  border-radius: 8px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+
+.detail-table {
+  width: 100%;
+  background-color: #fff;
+  font-size: 14px;
+  border-radius: 8px;
+}
+
+.detail-table tr {
+  border-bottom: 2px solid #ececec;
+  /* 行全体に線 */
+  background-color: transparent;
+}
+
+.detail-table th,
+.detail-table td {
+  /* ★ 修正 ★: セル個別の背景色を透明に（または白に統一）し、枠線を削除 */
+  background: transparent;
+  border: none;
+  padding: 14px 15px;
+  /* 適切な余白 */
+  vertical-align: middle;
+}
+
+.detail-table th {
+  width: 25%;
+  text-align: left;
+  font-weight: 600;
+  padding: 14px 12px;
+  background: #fff;
+  vertical-align: middle;
+}
+
+.detail-table td {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 12px;
+  font-weight: 600;
+  background: #fff;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.time-input {
+  padding: 10px 20px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.remarks-input {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+}
+
+.form-actions {
+  text-align: right;
+}
+
+.correction-button {
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 30px;
+  margin-top: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.correction-button:hover {
+  background: #555;
+}
+
+.detail-time {
+  padding: 0 15px;
+}
+
+.approval-button {
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 12px 40px;
+  margin-top: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.approval-button:hover {
+  background: #555;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.85em;
+  margin-top: 5px;
+}
+
+.is-invalid {
+  border: 1px solid red;
+  /* エラー発生時に入力欄の枠を赤くする例 */
+}
+
+/* 申請詳細モードの際の入力欄のスタイル */
+.is-readonly-mode input[type="time"],
+.is-readonly-mode textarea {
+  background-color: #f5f5f5;
+  /* 読み取り専用の背景色 */
+  cursor: default;
+  /* カーソルをデフォルトに */
+}
+
+.alert_p {
+  padding: 10px;
+  color: rgb(204, 49, 49);
+
+}
+
+/* 申請詳細モードの際の入力欄のスタイル */
+.is-readonly-mode input[type="time"],
+.is-readonly-mode textarea {
+  /* 読み取り専用の背景色 (薄いグレーなど) */
+  background-color: #fff;
+
+  /* カーソルをデフォルト（矢印）に */
+  cursor: default;
+
+  /* ★★★ 追加・修正: 枠線を完全に消す ★★★ */
+  border: none;
+
+  /* ★★★ 追加・修正: 影も消す（もしあれば） ★★★ */
+  box-shadow: none;
+
+  /* セル内の余白を確保するため、paddingは残すか調整する */
+  /* 例：paddingを上下3px、左右0pxに調整 */
+
+  /* 幅を100%にして、テキストが収まるようにする */
+  width: 100%;
+}
+
+/* 備考欄も同様にスタイルを適用 */
+.is-readonly-mode textarea.remarks-input {
+  /* 必要に応じて、高さやフォントサイズも調整 */
+  resize: none;
+  /* リサイズハンドルを非表示 */
+}
+
+/* 値がない場合のプレースホルダーは非表示にする (見た目をきれいにするため) */
+.is-readonly-mode input::placeholder,
+.is-readonly-mode textarea::placeholder {
+  color: transparent;
+}
+
+/* 1. 一番上の行の左上と右上の角丸 */
+.detail-table tr:first-child th:first-child {
+  border-top-left-radius: 8px;
+  /* カードの左上の角 */
+}
+
+.detail-table tr:first-child td:last-child {
+  border-top-right-radius: 8px;
+  /* カードの右上の角 */
+}
+
+/* 2. 一番下の行の左下と右下の角丸 */
+.detail-table tr:last-child th:first-child {
+  border-bottom-left-radius: 8px;
+  /* カードの左下の角 */
+}
+
+.detail-table tr:last-child td:last-child {
+  border-bottom-right-radius: 8px;
+  /* カードの右下の角 */
+  border-bottom: none;
+  /* 最後の行の下線を消す */
+}
+
+.alert-danger {
+  color: red;
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid red;
+  background-color: #fdd;
+  /* 薄い赤色の背景 */
+}
+
+/* 休憩時間などの時間帯表示を中央に */
+.detail-table .time-change {
+  display: inline-block;
+  text-align: center;
+}
+
+.detail-style {
+  padding: 0 60px;
+}
