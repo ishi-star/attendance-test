@@ -31,7 +31,7 @@
 
     {{-- 💡全体エラー表示 (修正申請画面でのみ表示) --}}
     @if (!$isReadOnly && $errors->any())
-        <div class="alert alert-danger" style="color: red; margin-bottom: 20px; padding: 10px; border: 1px solid red; background-color: #fdd;">
+        <div class="alert alert-danger">
             <ul>
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>

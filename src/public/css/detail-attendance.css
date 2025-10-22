@@ -232,3 +232,12 @@ td {
   border-bottom: none;
   /* 最後の行の下線を消す */
 }
+
+.alert-danger {
+  color: red;
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid red;
+  background-color: #fdd;
+  /* 薄い赤色の背景 */
+}

@@ -11,19 +11,20 @@
 <div class="detail-page-container">
     <h2 class="page-heading">勤怠詳細</h2>
 
-    {{-- 修正アクションのパスを管理者側ルートに合わせる --}}
-    {{-- 注意: 修正ルートはまだ定義されていない可能性があります。ルート定義に合わせて修正してください。 --}}
-    <form action="{{ route('admin.attendance.correct', ['id' => $attendance->id]) }}" method="POST">
+    {{-- ★ 管理者画面での全体エラー表示 ★ --}}
+    @if ($errors->any())
+        <div class="alert alert-danger" >
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('admin.attendance.correct', ['id' => $attendance->id]) }}" method="POST"onsubmit="return validateForm(event)">
         @csrf
-@if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+
         <div class="card-container">
             <table class="detail-table">
                 <tr>

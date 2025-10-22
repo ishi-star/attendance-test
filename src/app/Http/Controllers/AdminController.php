@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\AdminLoginRequest;
+use App\Http\Requests\AdminAttendanceUpdateRequest;
 use App\Models\Attendance;
 use App\Models\StampCorrectionRequest;
 use Carbon\Carbon;
@@ -105,19 +106,8 @@ class AdminController extends Controller
      * * @param Request $request
      * @param int $id AttendanceモデルのID
      */
-    public function correctAttendance(Request $request, $id)
+    public function correctAttendance(AdminAttendanceUpdateRequest $request, $id)
     {
-        // 1. バリデーション（ユーザー修正時と同じルールを適用）
-        $request->validate([
-            'clock_in' => 'required|date_format:H:i',
-            'clock_out' => 'nullable|date_format:H:i|after:clock_in',
-            'breaks' => 'nullable|array',
-            'breaks.*.start_time' => 'required_with:breaks.*.end_time|date_format:H:i',
-            'breaks.*.end_time' => 'nullable|date_format:H:i|after:breaks.*.start_time',
-            'new_break.start_time' => 'nullable|date_format:H:i',
-            'new_break.end_time' => 'nullable|date_format:H:i|after:new_break.start_time',
-            'remarks' => 'nullable|string|max:500', // 備考欄のバリデーションを追加
-        ]);
 
         $attendance = Attendance::findOrFail($id);
         $date = $attendance->clock_in->toDateString(); // 勤怠の日付を取得
