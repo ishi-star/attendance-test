@@ -3,7 +3,7 @@
 @section('title', '勤怠詳細')
 
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/detail-attendance.css') }}">
+<link rel="stylesheet" href="{{ asset('css/detail-user.css') }}">
 
 @endsection
 
@@ -75,7 +75,7 @@
                         value="{{ $isReadOnly && $stampCorrectionRequest->type === 'clock_in' ? \Carbon\Carbon::parse($stampCorrectionRequest->requested_time)->format('H:i') : old('clock_in', $attendance->clock_in->format('H:i')) }}"
                         class="time-input @error('clock_in') is-invalid @enderror"
                         {{ $isReadOnly ? 'disabled' : '' }}>
-                        〜
+                        <span class="detail-style" style="margin: 0 8px;">〜</span>
                         {{-- 💡 clock_outの value と disabled 属性 --}}
                         <input type="time" name="clock_out"
                         value="{{ $isReadOnly && $stampCorrectionRequest->type === 'clock_out' ? \Carbon\Carbon::parse($stampCorrectionRequest->requested_time)->format('H:i') : old('clock_out', $attendance->clock_out ? $attendance->clock_out->format('H:i') : '') }}"
@@ -109,7 +109,7 @@
                             value="{{ $isBreakUpdated ? \Carbon\Carbon::parse($requestedBreakData['start'])->format('H:i') : old("breaks.{$break->id}.start_time", optional($break->start_time)->format('H:i')) }}"
                             class="time-input @error("breaks.{$break->id}.start_time") is-invalid @enderror"
                             {{ $isReadOnly ? 'disabled' : '' }}>
-                        〜
+                        <span class="detail-style" style="margin: 0 8px;">〜</span>
                         {{-- 💡 既存休憩の end_time の value と disabled 属性 --}}
                         <input type="time" name="breaks[{{ $break->id }}][end_time]"
                             value="{{ $isBreakUpdated ? \Carbon\Carbon::parse($requestedBreakData['end'])->format('H:i') : old("breaks.{$break->id}.end_time", optional($break->end_time)->format('H:i')) }}"
@@ -148,7 +148,7 @@
                             value="{{ $isBreakAdded ? \Carbon\Carbon::parse($newBreakData['start'])->format('H:i') : old('new_break.start_time') }}"
                             class="time-input @error('new_break.start_time') is-invalid @enderror"
                             {{ $isReadOnly ? 'disabled' : '' }}>
-                        〜
+                        <span class="detail-style" style="margin: 0 8px;">〜</span>
                         {{-- 💡 新規休憩の end_time の value と disabled 属性 --}}
                         <input type="time" name="new_break[end_time]"
                             value="{{ $isBreakAdded ? \Carbon\Carbon::parse($newBreakData['end'])->format('H:i') : old('new_break.end_time') }}"

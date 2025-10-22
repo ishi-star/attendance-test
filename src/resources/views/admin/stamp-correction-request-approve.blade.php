@@ -4,38 +4,7 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/detail-attendance.css') }}">
-<!-- <style>
-  /* 修正箇所をハイライト表示 */
-  .requested-time {
-    background-color: #fff3cd;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: bold;
-    color: #856404;
-  }
-  
-  .original-time {
-    text-decoration: line-through;
-    color: #999;
-    margin-right: 8px;
-  }
-  
-  .time-change {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .arrow {
-    color: #666;
-    font-weight: bold;
-  }
 
-  .new-break-label {
-    color: #28a745;
-    font-weight: bold;
-  }
-</style> -->
 @endsection
 
 @section('content')
@@ -60,33 +29,29 @@
       <table class="detail-table">
         <tr>
           <th>名前</th>
-          <td>{{ $requestDetail->user->name }}</td>
+          <td class="detail-name">{{ $requestDetail->user->name }}</td>
         </tr>
         <tr>
           <th>日付</th>
           <td>
             <span class="detail-time">{{ $attendance->clock_in->format('Y年') }}</span>
+            <span class="detail-style"></span>
             <span class="detail-time">{{ $attendance->clock_in->format('m月d日') }}</span>
           </td>
         </tr>
         <tr>
           <th>出勤・退勤</th>
-          
           <td>
             @if($requests['clock_in'])
-              <span class="original-time">{{ $attendance->clock_in->format('H:i') }}</span>
-              <span class="arrow">→</span>
-              <span class="requested-time">{{ \Carbon\Carbon::parse($requests['clock_in']->requested_time)->format('H:i') }}</span>
+              <span class="detail-time">{{ \Carbon\Carbon::parse($requests['clock_in']->requested_time)->format('H:i') }}</span>
             @else
               <span class="detail-time">{{ $attendance->clock_in->format('H:i') }}</span>
             @endif
 
-            <span style="margin: 0 8px;">〜</span>
+            <span class="detail-style" style="margin: 0 8px;">〜</span>
 
             @if($requests['clock_out'])
-              <span class="original-time">{{ optional($attendance->clock_out)->format('H:i') }}</span>
-              <span class="arrow">→</span>
-              <span class="requested-time">{{ \Carbon\Carbon::parse($requests['clock_out']->requested_time)->format('H:i') }}</span>
+              <span class="detail-time">{{ \Carbon\Carbon::parse($requests['clock_out']->requested_time)->format('H:i') }}</span>
             @else
               <span class="detail-time">{{ optional($attendance->clock_out)->format('H:i') }}</span>
             @endif
@@ -94,7 +59,7 @@
         </tr>
         
 
-{{-- 既存の休憩を表示（修正申請があれば変更内容を表示） --}}
+        {{-- 既存の休憩を表示（修正申請があれば変更内容を表示） --}}
         @foreach($attendance->breaks as $index => $break)
           @php
             // この休憩に対する修正申請を探す
@@ -107,17 +72,14 @@
             <td>
               @if($requestedData) {{-- ★★★ ここで $requestedData が null でないか確認 ★★★ --}}
                 <div class="time-change">
-                  <span class="original-time">{{ $break->start_time->format('H:i') }}</span>
-                  <span class="arrow">→</span>
-                  <span class="requested-time">{{ \Carbon\Carbon::parse($requestedData['start'])->format('H:i') }}</span>
-                  <span style="margin: 0 8px;">〜</span>
-                  <span class="original-time">{{ optional($break->end_time)->format('H:i') }}</span>
-                  <span class="arrow">→</span>
-                  <span class="requested-time">{{ \Carbon\Carbon::parse($requestedData['end'])->format('H:i') }}</span>
+                  <span class="detail-time">{{ \Carbon\Carbon::parse($requestedData['start'])->format('H:i') }}</span>
+                  <span class="detail-style" style="margin: 0 8px;">〜</span>
+
+                  <span class="detail-time">{{ \Carbon\Carbon::parse($requestedData['end'])->format('H:i') }}</span>
                 </div>
               @else
                 <span class="detail-time">{{ $break->start_time->format('H:i') }}</span>
-                <span style="margin: 0 8px;">〜</span>
+                <span class="detail-style" style="margin: 0 8px;">〜</span>
                 <span class="detail-time">{{ optional($break->end_time)->format('H:i') }}</span>
               @endif
             </td>

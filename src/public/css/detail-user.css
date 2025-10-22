@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 /* Chrome / Safari 用 */
 input[type="time"]::-webkit-calendar-picker-indicator {
   display: none;
@@ -78,7 +85,7 @@ td {
 }
 
 .detail-table th {
-  width: 15%;
+  width: 25%;
   text-align: left;
   font-weight: 600;
   padding: 14px 12px;
@@ -87,27 +94,13 @@ td {
 }
 
 .detail-table td {
-  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 12px;
   font-weight: 600;
   background: #fff;
-  text-align: left;
+  text-align: center;
   vertical-align: middle;
-}
-
-.detail-table .time-change {
-  display: inline-block;
-  /* 自然に横並びに */
-  text-align: left;
-}
-
-.detail-time,
-.requested-time {
-  display: inline-block;
-  min-width: 60px;
-  /* 文字数にばらつきが出ないよう調整 */
-  text-align: right;
-  /* 時間を右寄せで整列させる */
-  padding-right: 4px;
 }
 
 .time-input {
@@ -148,8 +141,7 @@ td {
 }
 
 .detail-time {
-  padding-left: 5px;
-  padding-right: 30px;
+  padding: 0 15px;
 }
 
 .approval-button {
@@ -199,12 +191,20 @@ td {
 .is-readonly-mode textarea {
   /* 読み取り専用の背景色 (薄いグレーなど) */
   background-color: #fff;
+
   /* カーソルをデフォルト（矢印）に */
   cursor: default;
+
   /* ★★★ 追加・修正: 枠線を完全に消す ★★★ */
   border: none;
+
   /* ★★★ 追加・修正: 影も消す（もしあれば） ★★★ */
   box-shadow: none;
+
+  /* セル内の余白を確保するため、paddingは残すか調整する */
+  /* 例：paddingを上下3px、左右0pxに調整 */
+
+  /* 幅を100%にして、テキストが収まるようにする */
   width: 100%;
 }
 
@@ -261,6 +261,5 @@ td {
 }
 
 .detail-style {
-
-  padding: 0 60px;
+ padding: 0 60px;
 }
