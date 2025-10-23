@@ -111,3 +111,20 @@ body {
 .table-header th:last-child {
   border-top-right-radius: 8px;
 }
+.csv-actions {
+  text-align: right;
+  margin-top: 20px;
+
+}
+
+.csv-download-button {
+  background: #000000;
+  color: #fff;
+  border: none;
+  padding: 10px 30px;
+  margin-top: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+}

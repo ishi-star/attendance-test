@@ -87,9 +87,9 @@
         </tbody>
     </table>
     {{-- =================================== --}}
-    {{-- ★ CSVダウンロードボタンの追加 ★ --}}
+    {{-- ★ CSVダウンロードボタン ★ --}}
     {{-- =================================== --}}
-    <div class="form-actions" style="text-align: right; margin-top: 20px;">
+    <div class="csv-actions">
         {{-- ダウンロードルート (admin.attendance.export.csv) に必要なパラメータを渡す --}}
         <a
             href="{{ route('admin.attendance.export.csv', [

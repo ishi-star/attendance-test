@@ -115,15 +115,16 @@ td {
 
 .form-actions {
   text-align: right;
+  margin-right: 25px;
 }
 
 .correction-button {
-  background: #333;
+  background: #000000;
   color: #fff;
   border: none;
   padding: 10px 30px;
   margin-top: 10px;
-  font-size: 14px;
+  font-size: 16px;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.3s ease;
@@ -184,20 +185,9 @@ td {
 .is-readonly-mode textarea {
   /* 読み取り専用の背景色 (薄いグレーなど) */
   background-color: #fff;
-
-  /* カーソルをデフォルト（矢印）に */
   cursor: default;
-
-  /* ★★★ 追加・修正: 枠線を完全に消す ★★★ */
   border: none;
-
-  /* ★★★ 追加・修正: 影も消す（もしあれば） ★★★ */
   box-shadow: none;
-
-  /* セル内の余白を確保するため、paddingは残すか調整する */
-  /* 例：paddingを上下3px、左右0pxに調整 */
-
-  /* 幅を100%にして、テキストが収まるようにする */
   width: 100%;
 }
 
