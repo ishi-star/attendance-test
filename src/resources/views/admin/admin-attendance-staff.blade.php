@@ -86,5 +86,22 @@
             @endfor
         </tbody>
     </table>
+    {{-- =================================== --}}
+    {{-- ★ CSVダウンロードボタンの追加 ★ --}}
+    {{-- =================================== --}}
+    <div class="form-actions" style="text-align: right; margin-top: 20px;">
+        {{-- ダウンロードルート (admin.attendance.export.csv) に必要なパラメータを渡す --}}
+        <a
+            href="{{ route('admin.attendance.export.csv', [
+                'userId' => $user->id,
+                'year' => $targetMonth->year,
+                'month' => $targetMonth->month
+            ]) }}"
+            class="csv-download-button"
+            target="_blank" {{-- 新しいタブで開くことで、現在の画面を維持 --}}
+        >
+            CSV出力
+        </a>
+    </div>
 </div>
 @endsection

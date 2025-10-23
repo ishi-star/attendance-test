@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\AdminLoginRequest;
 use App\Http\Requests\AdminAttendanceUpdateRequest;
 use App\Models\Attendance;
+use Illuminate\Support\Facades\Response;
 use App\Models\StampCorrectionRequest;
 use Carbon\Carbon;
 use App\Models\BreakModel;
@@ -200,7 +201,91 @@ class AdminController extends Controller
              'dates' => $dates, // ★ 追加
         ]);
     }
+/**
+     * 指定ユーザーの指定年月の勤怠データをCSVでダウンロードする
+     *
+     * @param int $userId 対象ユーザーID
+     * @param int $year 対象年
+     * @param int $month 対象月
+     * @return \Illuminate\Http\Response
+     */
+    public function exportUserAttendanceCsv($userId, $year, $month)
+    {
+        // 対象ユーザーの勤怠データを取得
+        $attendances = Attendance::where('user_id', $userId)
+            ->whereYear('clock_in', $year)
+            ->whereMonth('clock_in', $month)
+            ->with('breaks') // 休憩時間を計算するためにリレーションをロード
+            ->orderBy('clock_in', 'asc')
+            ->get();
 
+        // CSVヘッダーを定義
+        $headers = [
+            // WindowsのExcelで文字化けしないようにSJIS-winを指定
+            'Content-Type' => 'text/csv; charset=SJIS-win', 
+            'Content-Disposition' => 'attachment; filename="' . $year . '_' . $month . '_attendance_user_' . $userId . '.csv"',
+        ];
+
+        // CSVデータを作成
+        $callback = function() use ($attendances)
+        {
+            $file = fopen('php://output', 'w');
+
+            // ヘッダー行をSJISに変換して書き込み
+            $csvHeaders = [
+                '日付',
+                '出勤時刻',
+                '退勤時刻',
+                '総休憩時間 (分)',
+                '実労働時間 (分)',
+                '備考'
+            ];
+            // SJISに変換して書き込み
+            fputcsv($file, array_map(fn($v) => mb_convert_encoding($v, 'SJIS-win', 'UTF-8'), $csvHeaders));
+
+            // データ行の書き込み
+            foreach ($attendances as $attendance) {
+                // 休憩時間と労働時間を再計算
+                $totalBreakMinutes = $attendance->breaks
+                        ->whereNotNull('end_time') // end_timeがある休憩のみを対象
+                        ->sum(function ($break) {
+                            // start_timeとend_timeが存在すればdiffInMinutesを呼び出す
+                            if ($break->start_time && $break->end_time) {
+                                return $break->end_time->diffInMinutes($break->start_time);
+                            }
+                            return 0; // どちらかがnullなら0分とする
+                        });
+
+                $totalWorkMinutes = 0;
+                if ($attendance->clock_in && $attendance->clock_out) {
+                    $totalWorkMinutes = $attendance->clock_out->diffInMinutes($attendance->clock_in) - $totalBreakMinutes;
+                }
+
+                $row = [
+                    // 日付 (clock_inから取得)
+                    $attendance->clock_in ? $attendance->clock_in->format('Y/m/d') : 'N/A',
+                    // 出勤時刻
+                    $attendance->clock_in ? $attendance->clock_in->format('H:i') : '未打刻',
+                    // 退勤時刻
+                    $attendance->clock_out ? $attendance->clock_out->format('H:i') : '未打刻',
+                    // 総休憩時間
+                    $totalBreakMinutes,
+                    // 実労働時間
+                    $totalWorkMinutes,
+                    // 備考
+                    ''
+                ];
+
+                // SJISに変換して書き込み
+                fputcsv($file, array_map(fn($v) => mb_convert_encoding($v, 'SJIS-win', 'UTF-8'), $row));
+            }
+
+            fclose($file);
+        };
+
+        // レスポンスとしてストリーミングダウンロードを実行
+        return Response::stream($callback, 200, $headers);
+    }
     /**
      * 勤怠修正の申請一覧を表示する
      */

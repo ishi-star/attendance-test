@@ -28,6 +28,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
      // ★ 勤怠修正申請の詳細画面 (GET) ★
     // {id} は申請レコード（stamp_correction_requests）のIDです。
     Route::get('/stamp_correction_request/approve/{id}', [AdminController::class, 'showRequestDetail'])->name('request.detail');
+    // CSVダウンロード用ルート (AdminController::class を使用)
+    Route::get('/attendance/{userId}/export-csv/{year}/{month}', [AdminController::class, 'exportUserAttendanceCsv'])
+        ->name('attendance.export.csv');
 
         // ログアウトルートを追加
     Route::post('/logout', function () {
