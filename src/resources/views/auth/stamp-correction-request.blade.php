@@ -36,7 +36,7 @@
                 <tr class="table-row">
                     <td class="table-cell">承認待ち</td>
                     <td class="table-cell">{{ $user->name }}</td>
-                    <td class="table-cell">{{ \Carbon\Carbon::parse($request->attendance->date)->format('Y/m/d') }}</td>
+                    <td class="table-cell">{{ $request->attendance?->clock_in?->format('Y/m/d') }}</td>
                     <td class="table-cell">{{ $request->reason }}</td> 
                     <td class="table-cell">{{ $request->created_at->format('Y/m/d') }}</td>
                     <td class="table-cell">
@@ -70,7 +70,7 @@
                 <tr class="table-row">
                     <td class="table-cell">承認済み</td>
                     <td class="table-cell">{{ $user->name }}</td>
-                    <td class="table-cell">{{ \Carbon\Carbon::parse($request->attendance->date)->format('Y/m/d') }}</td> {{-- ← 対象の日付は勤怠テーブルから取得する必要がある --}}
+                    <td class="table-cell">{{ $request->attendance?->clock_in?->format('Y/m/d') }}</td> {{-- ← 対象の日付は勤怠テーブルから取得する必要がある --}}
                     <td class="table-cell">{{ $request->reason }}</td> 
                     <td class="table-cell">{{ $request->updated_at->format('Y/m/d') }}</td>
                     <td class="table-cell">
