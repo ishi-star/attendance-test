@@ -74,7 +74,22 @@
                 <tr>
                     <th>備考</th>
                     <td>
-                        <textarea name="remarks" class="remarks-input" placeholder="修正理由を記入してください">{{ $attendance->remarks ?? '' }}</textarea>
+                        @php
+                            // 1. 勤怠本体の備考を取得（管理者が過去に修正で入力した内容など）
+                            $initialRemarks = $attendance->remarks;
+                            
+                            // 2. 勤怠本体の備考が空の場合、最新の修正申請の理由をチェック
+                            if (empty($initialRemarks)) {
+                                // latest('created_at') で最新の申請を効率的に取得
+                                // latest() メソッドは、リレーションが定義されているため利用可能
+                                $latestRequest = $attendance->stampCorrectionRequests()->latest('created_at')->first();
+                                
+                                if ($latestRequest && !empty($latestRequest->reason)) {
+                                    $initialRemarks = $latestRequest->reason;
+                                }
+                            }
+                        @endphp
+                        <textarea name="remarks" class="remarks-input" placeholder="修正理由を記入してください">{{ $initialRemarks }}</textarea>
                     </td>
                 </tr>
             </table>

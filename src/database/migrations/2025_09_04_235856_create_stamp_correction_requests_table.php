@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
             // 修正対象のtypeを拡張: break_update, break_add を追加
-            $table->enum('type', ['clock_in', 'clock_out', 'break_update', 'break_add']); // ★ 修正 ★
+            $table->enum('type', ['clock_in', 'clock_out', 'break_update', 'break_add', 'new_attendance']); // ★ 修正 ★
 
             // 既存の休憩の修正の場合、どの休憩IDを修正したかを特定 (NULLを許容)
             $table->foreignId('original_break_id')

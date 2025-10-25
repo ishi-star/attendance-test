@@ -21,6 +21,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/attendances/correct/{id}', [AdminController::class, 'correctAttendance'])->name('attendance.correct');
     // 個別スタッフの勤怠一覧画面
     Route::get('/attendance/staff/{id}/{month?}', [AdminController::class, 'showUserAttendances'])->name('user.attendances');
+
     // 申請一覧画面
     Route::get('/stamp_correction_request/list', [AdminController::class, 'showRequests'])->name('requests');
     // 申請処理 (承認/却下)
@@ -57,8 +58,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/break-end', [AttendanceController::class, 'breakEnd']);
     // 勤怠一覧画面
     Route::get('/attendance/list/{year?}/{month?}', [AttendanceController::class, 'showAttendanceList'])->name('attendance.list');
+    Route::get('/attendance/request/new', [AttendanceController::class, 'showNewRequestForm'])->name('attendance.request_form');
     // 勤怠詳細画面
-    Route::get('/attendance/detail/{id}', [AttendanceController::class, 'showAttendanceDetail']);
+    Route::get('/attendance/detail/{id}', [AttendanceController::class, 'showAttendanceDetail'])->name('attendance.detail');
     // 勤怠修正のルート
     Route::post('/attendance/request/{id}', [AttendanceController::class, 'requestCorrection'])->name('attendance.request');
     // 申請一覧画面を表示 (showRequestList)

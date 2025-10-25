@@ -392,6 +392,45 @@ class AdminController extends Controller
                 $attendance->clock_in = $correctionRequest->requested_time;
             } elseif ($correctionRequest->type === 'clock_out') {
                 $attendance->clock_out = $correctionRequest->requested_time;
+
+            } elseif ($correctionRequest->type === 'new_attendance') {
+                // requested_data (JSON) から修正後の時刻を取得
+                if ($correctionRequest->requested_data) {
+                    $data = json_decode($correctionRequest->requested_data, true);
+                    $date = $attendance->clock_in->toDateString(); // 勤怠の日付を取得
+
+                    // 1. 出勤時刻の反映
+                    if (!empty($data['clock_in'])) {
+                        // 日付と時刻を組み合わせてCarbonオブジェクトに変換
+                        $date = $attendance->clock_in->toDateString();
+                        $attendance->clock_in = Carbon::parse("{$date} {$data['clock_in']}");
+                        if ($attendance->clock_out && $attendance->clock_out->toDateString() !== $attendance->clock_in->toDateString()) {
+
+                        // clock_out の時刻部分を維持しつつ、日付部分を新しい clock_in の日付に合わせる
+                        $clockOutTime = $attendance->clock_out->format('H:i:s');
+                        }
+                    }
+
+                    // 2. 退勤時刻の反映
+                    if (!empty($data['clock_out'])) {
+                        // 日付と時刻を組み合わせてCarbonオブジェクトに変換
+                        $date = $attendance->clock_in->toDateString();
+                        $attendance->clock_out = Carbon::parse("{$date} {$data['clock_out']}");
+                    } else {
+                        $attendance->clock_out = null; // 退勤がない場合はnullに設定
+                    }
+
+                    // 3. 新規休憩の反映（申請に含まれていた場合）
+                    // JSONデータは "new_break_start" / "new_break_end" というキーで保存されている前提
+                    if (!empty($data['new_break_start']) && !empty($data['new_break_end'])) {
+                        // BreakModelを新規作成
+                        BreakModel::create([
+                            'attendance_id' => $attendance->id,
+                            'start_time' => Carbon::parse("{$date} {$data['new_break_start']}"),
+                            'end_time' => Carbon::parse("{$date} {$data['new_break_end']}"),
+                        ]);
+                    }
+                }
             } elseif ($correctionRequest->type === 'break_update' || $correctionRequest->type === 'break_add') {
 
             // requested_data (JSON) から修正後の時刻を取得
@@ -422,22 +461,35 @@ class AdminController extends Controller
             }
         }
 
-            // 勤怠本体を保存
+        // 勤怠本体を保存
+        $attendance->save();
+
+// 申請理由（reason）を勤怠の備考（remarks）に代入する
+            // 備考欄は、detail-attendance.blade.phpでも使われているremarksに申請理由を上書きする
+            // $correctionRequest は現在承認しようとしている個別の申請レコード
+            $attendance->remarks = $correctionRequest->reason;
+
+            // 勤怠本体を保存（remarksを反映させるため、再度保存が必要）
             $attendance->save();
+            
+            // ★★★【ここまで追加・修正】★★★
+
 
             // ★ 必須: 勤務時間と休憩時間を再計算して更新 ★
             $this->updateWorkAndBreakTimes($attendance);
 
+            // $attendance->status = 'approved'; // ★不要なコードを削除★
+            // $attendance->save(); // ★不要なコードを削除★
+
             // 申請ステータスを承認済(approved)にする
-            $correctionRequest->status = 'approved';
-            $correctionRequest->save();
+            StampCorrectionRequest::where('attendance_id', $attendance->id)
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'approved',
+                'updated_at' => now(), // updated_at も忘れずに更新
+            ]);
 
-            // 勤務時間と休憩時間を再計算 (AttendanceControllerのメソッドを流用)
-            // ※ AttendanceController::updateWorkAndBreakTimes メソッドを呼び出すか、
-            //   AdminControllerに同様のロジックを実装する必要があります。
-            //   ここでは処理の簡略化のため一旦省略しますが、本番では必須です。
-
-            $message = '勤怠修正申請を承認しました。';
+        $message = '勤怠修正申請を承認しました。';
 
         } elseif ($request->action === 'reject') {
             // 却下: 申請ステータスを却下(rejected)にする

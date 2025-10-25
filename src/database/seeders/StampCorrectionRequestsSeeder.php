@@ -17,7 +17,8 @@ class StampCorrectionRequestsSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::first();
+        $user = User::where('email', 'user@example.com')->first();
+
         $attendance = Attendance::first();
 
         if ($user && $attendance) {
@@ -25,10 +26,12 @@ class StampCorrectionRequestsSeeder extends Seeder
                 'user_id' => $user->id,
                 'attendance_id' => $attendance->id,
                 'type' => 'clock_in',
-                'requested_time' => '2025-09-02 09:15:00',
+                'requested_time' => '2025-09-01 09:15:00',
                 'status' => 'pending',
                 'reason' => '遅刻修正のテスト',
             ]);
+            $attendance->status = 'pending';
+            $attendance->save();
         }
     }
 }

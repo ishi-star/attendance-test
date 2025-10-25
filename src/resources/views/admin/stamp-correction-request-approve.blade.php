@@ -8,6 +8,40 @@
 @endsection
 
 @section('content')
+@php
+    // =================================================================
+    // ★追加・修正箇所1: new_attendance のデータ解析と表示時刻の決定
+    // =================================================================
+    $isNewAttendance = ($requestDetail->type === 'new_attendance');
+    $newAttendanceData = null;
+
+    // new_attendanceの場合、requested_data (JSON) をパース
+    if ($isNewAttendance && $requestDetail->requested_data) {
+        $newAttendanceData = json_decode($requestDetail->requested_data, true);
+    }
+
+    // 表示する出勤時刻の決定:
+    // 1. new_attendanceの申請JSON -> 2. 個別のclock_in申請 -> 3. 既存の勤怠時刻
+    $displayClockIn = null;
+    if ($isNewAttendance && $newAttendanceData && isset($newAttendanceData['clock_in'])) {
+        // new_attendance申請の時刻を取得 (例: "10:00")
+        $displayClockIn = $newAttendanceData['clock_in'];
+    } elseif ($requests['clock_in']) {
+        // 個別の clock_in 修正申請から時刻を取得 (Carbonでパース)
+        $displayClockIn = \Carbon\Carbon::parse($requests['clock_in']->requested_time)->format('H:i');
+    }
+
+    // 表示する退勤時刻の決定:
+    // 1. new_attendanceの申請JSON -> 2. 個別のclock_out申請 -> 3. 既存の勤怠時刻
+    $displayClockOut = null;
+    if ($isNewAttendance && $newAttendanceData && isset($newAttendanceData['clock_out'])) {
+        // new_attendance申請の時刻を取得 (例: "19:00")
+        $displayClockOut = $newAttendanceData['clock_out'];
+    } elseif ($requests['clock_out']) {
+        // 個別の clock_out 修正申請から時刻を取得 (Carbonでパース)
+        $displayClockOut = \Carbon\Carbon::parse($requests['clock_out']->requested_time)->format('H:i');
+    }
+@endphp
 <div class="detail-page-container">
   <h2 class="page-heading">勤怠修正申請詳細</h2>
 
@@ -42,16 +76,18 @@
         <tr>
           <th>出勤・退勤</th>
           <td>
-            @if($requests['clock_in'])
-              <span class="detail-time">{{ \Carbon\Carbon::parse($requests['clock_in']->requested_time)->format('H:i') }}</span>
+            {{-- ★修正箇所2: 出勤時刻の表示ロジックを修正 (上で決定した $displayClockIn を使用) ★ --}}
+            @if($displayClockIn)
+              <span class="detail-time">{{ $displayClockIn }}</span>
             @else
               <span class="detail-time">{{ $attendance->clock_in->format('H:i') }}</span>
             @endif
 
             <span class="detail-style" style="margin: 0 8px;">〜</span>
 
-            @if($requests['clock_out'])
-              <span class="detail-time">{{ \Carbon\Carbon::parse($requests['clock_out']->requested_time)->format('H:i') }}</span>
+            {{-- ★修正箇所3: 退勤時刻の表示ロジックを修正 (上で決定した $displayClockOut を使用) ★ --}}
+            @if($displayClockOut)
+              <span class="detail-time">{{ $displayClockOut }}</span>
             @else
               <span class="detail-time">{{ optional($attendance->clock_out)->format('H:i') }}</span>
             @endif
@@ -86,7 +122,21 @@
           </tr>
         @endforeach
 
-{{-- 新規追加の休憩申請を表示 --}}
+        {{-- 新規追加の休憩申請を表示 --}}
+        @php
+            // break_addsのコレクションにnew_attendanceの休憩データを追加する準備
+            $allNewBreaks = collect($requests['break_adds']);
+            if ($isNewAttendance && $newAttendanceData && !empty($newAttendanceData['new_break_start'])) {
+                // new_attendanceの休憩データを break_add の形式に変換してコレクションに追加
+                $allNewBreaks->push((object)[
+                    'requested_data' => json_encode([
+                        'start' => $newAttendanceData['new_break_start'],
+                        'end' => $newAttendanceData['new_break_end']
+                    ])
+                ]);
+            }
+        @endphp
+
         @foreach($requests['break_adds'] as $index => $breakAddRequest)
           @php
             $requestedData = json_decode($breakAddRequest->requested_data, true);

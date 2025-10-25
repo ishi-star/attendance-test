@@ -33,11 +33,21 @@
         <tbody class="table-body">
             @foreach($dates as $date)
                 @php
-                    $attendance = $attendances->get($date->format('Y-m-d'));
+                    $dateKey = $date->format('Y-m-d');
+                    $attendance = $attendances->get($dateKey);
+
+                    // 💡 詳細リンクのURLを定義 (勤怠の有無でURLを切り替え)
+                    if ($attendance) {
+                        $detailUrl = "/attendance/detail/{$attendance->id}"; 
+                    } else {
+                        // 勤怠がない場合: 新規申請フォームへ誘導
+                        $detailUrl = "/attendance/request/new?date={$dateKey}";
+                    }
                 @endphp
                 <tr class="table-row">
                     <td class="table-cell">{{ $date->locale('ja')->translatedFormat('m/d(D)') }}</td>
 
+                    {{-- 勤怠データ表示部分 (4列) --}}
                     @if($attendance)
                         <td class="table-cell">{{ $attendance->clock_in->format('H:i') }}</td>
                         <td class="table-cell">{{ $attendance->clock_out ? $attendance->clock_out->format('H:i') : '' }}</td>
@@ -47,17 +57,18 @@
                         <td class="table-cell">
                             {{ floor($attendance->work_time / 60) }}:{{ sprintf('%02d', $attendance->work_time % 60) }}
                         </td>
-                        <td class="table-cell">
-                            <a href="/attendance/detail/{{ $attendance->id }}" class="detail-link">詳細
-                            </a>
-                        </td>
                     @else
-                        <td class="table-cell"></td>
+                        {{-- 勤怠がない場合は空欄のセルを4つ表示 --}}
                         <td class="table-cell"></td>
                         <td class="table-cell"></td>
                         <td class="table-cell"></td>
                         <td class="table-cell"></td>
                     @endif
+
+                    {{-- 💡 詳細リンクセル (常に表示) --}}
+                    <td class="table-cell">
+                        <a href="{{ $detailUrl }}" class="detail-link">詳細</a>
+                    </td>
                 </tr>
             @endforeach
         </tbody>

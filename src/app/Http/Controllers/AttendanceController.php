@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\BreakModel;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
@@ -201,17 +202,57 @@ class AttendanceController extends Controller
         // ログイン中のユーザー情報を取得
         $user = Auth::user();
 
-        // 指定されたIDの勤怠記録を、関連する休憩記録と一緒に取得する
-        $attendance = Attendance::where('user_id', $user->id)
-                                ->with('breaks', 'user')
-                                // brakesとuserテーブルのデータも一緒に取得する
-                                ->findOrFail($id); // IDが見つからない場合は404エラーを返す
+    // 勤怠と関連休憩を取得
+    $attendance = Attendance::where('user_id', $user->id)
+                            ->with('breaks', 'user')
+                            ->findOrFail($id);
 
-        $pendingRequests = StampCorrectionRequest::where('attendance_id', $id)
-            ->where('status', 'pending')
-            ->get();
+    // 最新の承認待ち申請（reason を取得するため）
+    $stampCorrectionRequest = StampCorrectionRequest::where('attendance_id', $attendance->id)
+                                    ->where('status', ['pending', 'approved'])
+                                    ->latest('created_at')
+                                    ->first(); // 1件だけ取得
 
-        return view('auth.detail-attendance', compact('attendance', 'pendingRequests'));
+    $pendingRequests = StampCorrectionRequest::where('attendance_id', $attendance->id)
+                                ->where('status', 'pending')
+                                ->get();
+
+    return view('auth.detail-attendance', compact('attendance', 'pendingRequests', 'stampCorrectionRequest'));
+    }
+
+    // 勤怠記録がない日付の、新規勤怠申請フォームを表示する
+    public function showNewRequestForm(Request $request)
+    {
+        // 1. URLから日付（date）を取得し、形式をチェック
+        $requestDate = $request->query('date');
+
+        // 日付がない、または形式（YYYY-MM-DD）が不正な場合はエラーとして一覧に戻す
+        if (!$requestDate || !Carbon::hasFormat($requestDate, 'Y-m-d')) {
+            return redirect()->route('attendance.list')->with('error', '日付が正しく指定されていません。');
+        }
+
+        // 2. Blade表示用のダミーの勤怠データ（$attendance）を準備
+        $user = Auth::user();
+        $targetDate = Carbon::parse($requestDate)->startOfDay();
+
+        // Blade側で $attendance->id が 0 の場合に新規申請モードと判定されます。
+        $attendance = (object)[
+            'id' => 0, // 💡 新規申請であることを示すID
+            'user' => $user, // ログインユーザーのモデルを直接セット
+            'clock_in' => null, // Carbonインスタンス（日付表示用）
+            'clock_out' => null, // 退勤はまだないのでnull
+            'breaks' => collect(), // 休憩はまだないので空のCollection
+        ];
+
+        // 3. 承認待ちの申請は存在しないため null 扱いとなる空のCollectionを渡す
+        $pendingRequests = collect();
+
+        // 4. Bladeビューを表示
+        // $stampCorrectionRequest を渡さないことで、Blade側で $isReadOnly = false となり入力可能になります。
+        return view('auth.detail-attendance', [
+            'attendance' => $attendance,
+            'pendingRequests' => $pendingRequests,
+        ]);
     }
 
     /**
@@ -219,9 +260,21 @@ class AttendanceController extends Controller
  */
     public function requestCorrection(DetailAttendanceRequest $request, $id)
     {
+        $userId = Auth::id();
     // ★★★ この dd($request->all()); を削除する ★★★
     // dd($request->all());
     // ★★★ 削除後、必ず保存してください ★★★
+        if ($id == 0) {
+            // ⚠️ 注意: このバリデーションのため、Bladeファイルに hidden field を追加する必要があります。
+            $request->validate([
+                'target_date' => 'required|date_format:Y-m-d',
+            ]);
+            
+            // 新規申請では出勤時刻が必須と仮定
+            if (!$request->filled('clock_in')) {
+                return redirect()->back()->with('error', '新規勤怠の登録には出勤時刻が必須です。');
+            }
+        }
         // 1. バリデーション
         $request->validate([
             'clock_in' => 'nullable|date_format:H:i',
@@ -231,6 +284,50 @@ class AttendanceController extends Controller
             'new_break.end_time' => 'nullable|date_format:H:i|after:new_break.start_time',
             'remarks' => 'required|string|max:500', // 理由が必須であると仮定
         ]);
+
+        // 💡 【追記】 $id が 0 の場合の新規登録処理
+        if ($id == 0) {
+            $user = Auth::user();
+            $targetDateString = $request->input('target_date');
+            $date = $targetDateString; // $date は $targetDateString と同じ
+
+            // 1. Attendanceレコードを新規作成（申請の親となる枠のみ作成）
+            //    時刻を 00:00:00 に設定し、ユーザーが申請した時刻は反映しない
+            $attendance = Attendance::create([
+                'user_id' => $user->id,
+                'clock_in' => Carbon::parse("{$targetDateString} 00:00:00"), // 時刻は 00:00:00 に設定
+                'clock_out' => null, // null に設定
+                'work_time' => 0, // 初期値
+                'break_time' => 0, // 初期値
+            ]);
+            
+            $id = $attendance->id; // 新しいIDをセット
+
+            // 2. 申請データをJSONにまとめる
+            $newAttendanceData = [
+                'clock_in' => $request->clock_in,
+                'clock_out' => $request->clock_out,
+                'new_break_start' => $request->input('new_break.start_time'),
+                'new_break_end' => $request->input('new_break.end_time'),
+            ];
+
+            // 3. 新規申請レコードを pending で作成
+            StampCorrectionRequest::create([
+                'attendance_id' => $id,
+                'user_id' => $attendance->user_id,
+                'type' => 'new_attendance',// 新しい申請タイプ（新規勤怠用）
+                'requested_time' => null, // 時刻申請ではないので null
+                'requested_data' => json_encode($newAttendanceData), // JSONで申請データを保持
+                'reason' => $request->input('remarks'),
+                'status' => 'pending', // ★★★ 承認待ち ★★★
+            ]);
+
+            // 4. 休憩の新規追加処理 (直接反映ロジック) は削除済み
+            // 休憩データも申請レコードとして保存されるため、ここでは何もしません。
+            
+            // 5. リダイレクト先を申請一覧へ修正
+            return redirect()->route('request.list')->with('success', '新規勤怠の申請を提出しました。承認をお待ちください。');
+        }
 
         $attendance = Attendance::findOrFail($id);
 
@@ -249,7 +346,7 @@ class AttendanceController extends Controller
                 ->where('type', 'clock_in')
                 ->where('status', 'pending')
                 ->exists()) {
-                
+
                 StampCorrectionRequest::create([
                     'attendance_id' => $id,
                     'user_id' => $attendance->user_id,
@@ -269,7 +366,7 @@ class AttendanceController extends Controller
                 ->where('type', 'clock_out')
                 ->where('status', 'pending')
                 ->exists()) {
-                    
+
                 StampCorrectionRequest::create([
                     'attendance_id' => $id,
                     'user_id' => $attendance->user_id,
@@ -281,8 +378,8 @@ class AttendanceController extends Controller
                 $hasRequested = true;
             }
         }
-        
-        // 4. ★★★ 既存の休憩時間の修正申請ロジックを追加 ★★★
+
+        // 4. ★★★ 既存の休憩時間の修正申請 ★★★
         if ($request->filled('breaks')) {
             foreach ($request->input('breaks') as $breakId => $breakTimes) {
                 $breakModel = BreakModel::find($breakId);
@@ -325,7 +422,7 @@ class AttendanceController extends Controller
         }
 
             // 5. ★★★ 新規追加の休憩時間の申請ロジックを修正 ★★★
-            // $request->input('new_break')が配列であり、かつstart_timeとend_timeの両方が入力されているかチェ// 5. 新規追加の休憩時間の申請ロジック (上書き方式)
+            // 新規追加の休憩時間の申請ロジック (上書き方式)
         if (
             $request->filled('new_break') &&
             is_array($request->input('new_break')) &&
@@ -350,7 +447,7 @@ class AttendanceController extends Controller
                 'status' => 'pending', // ステータスは保留中
             ];
 
-            // 1. 既存の保留中の同じ申請を検索
+            // 既存の保留中の同じ申請を検索
             $existingRequest = StampCorrectionRequest::where('attendance_id', $id)
                 ->where('type', 'break_add')
                 ->where('status', 'pending')
@@ -363,7 +460,7 @@ class AttendanceController extends Controller
                 // 3. 申請がない場合、新規作成する
                 StampCorrectionRequest::create($dataToSave);
             }
-            
+
             $hasRequested = true;
         }
 
@@ -377,7 +474,6 @@ class AttendanceController extends Controller
 
 /**
      * 申請一覧画面を表示する (PG06)
-     * ルート名: request.list
      *
      * @return \Illuminate\View\View
      */
