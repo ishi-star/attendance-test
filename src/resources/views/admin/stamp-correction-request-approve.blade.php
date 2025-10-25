@@ -93,14 +93,14 @@
           @endphp
           <tr>
             <th>
-              <span class="new-break-label">休憩{{ $attendance->breaks->count() + $index + 1 }}（新規）</span>
+              <span class="new-break-label">休憩{{ $attendance->breaks->count() + $index + 1 }}</span>
             </th>
             <td>
               @if($requestedData) {{-- ★★★ ここで $requestedData が null でないか確認 ★★★ --}}
                 <div class="time-change">
-                  <span class="requested-time">{{ \Carbon\Carbon::parse($requestedData['start'])->format('H:i') }}</span>
-                  <span style="margin: 0 8px;">〜</span>
-                  <span class="requested-time">{{ \Carbon\Carbon::parse($requestedData['end'])->format('H:i') }}</span>
+                  <span class="detail-time">{{ \Carbon\Carbon::parse($requestedData['start'])->format('H:i') }}</span>
+                  <span class="detail-style" style="margin: 0 8px;">〜</span>
+                  <span class="detail-time">{{ \Carbon\Carbon::parse($requestedData['end'])->format('H:i') }}</span>
                 </div>
               @else
                  <div style="color: red;">申請データが読み込めませんでした。</div>

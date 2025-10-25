@@ -86,12 +86,11 @@
 
                 @foreach($attendance->breaks as $index => $break)
                 <tr>
-                    <th>休憩{{ $index + 1 }}</th>
+                    <th>休憩</th>
                     <td>
                         {{-- break_update の申請内容を取得 --}}
                 @php
                     $isBreakUpdated = $isReadOnly && $stampCorrectionRequest->type === 'break_update' && $stampCorrectionRequest->original_break_id === $break->id;
-                    // ↓ この行か次の行あたりに怪しい空白が紛れている可能性があります
                     $requestedData = optional($stampCorrectionRequest)->requested_data;
                     $requestedBreakData = null;
 
@@ -139,9 +138,7 @@
                 {{-- 通常モード（$isReadOnlyがfalse）か、新規追加の申請（$isBreakAddedがtrue）の場合に表示 --}}
                 @if (!$isReadOnly || $isBreakAdded)
                 <tr>
-                    <th>休憩{{ $attendance->breaks->count() + 1 }}
-                        @if($isBreakAdded) <span style="color: red;">(申請内容)</span> @endif
-                    </th>
+                    <th>休憩</th>
                     <td>
                         {{-- 💡 新規休憩の start_time の value と disabled 属性 --}}
                         <input type="time" name="new_break[start_time]"
@@ -163,10 +160,10 @@
                     <th>備考</th>
                     <td>
                         {{-- 💡 備考の value と disabled 属性 --}}
-                        <textarea name="remarks" 
-                                  class="remarks-input @error('remarks') is-invalid @enderror" 
-                                  placeholder="修正理由を記入してください"
-                                  {{ $isReadOnly ? 'disabled' : '' }}
+                        <textarea name="remarks"
+                                     class="remarks-input @error('remarks') is-invalid @enderror"
+                                     placeholder="修正理由を記入してください"
+                                     {{ $isReadOnly ? 'disabled' : '' }}
                         >{{ $remarksValue }}</textarea>
 
                     </td>
