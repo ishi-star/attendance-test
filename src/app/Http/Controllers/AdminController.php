@@ -464,24 +464,14 @@ class AdminController extends Controller
         // 勤怠本体を保存
         $attendance->save();
 
-// 申請理由（reason）を勤怠の備考（remarks）に代入する
-            // 備考欄は、detail-attendance.blade.phpでも使われているremarksに申請理由を上書きする
             // $correctionRequest は現在承認しようとしている個別の申請レコード
             $attendance->remarks = $correctionRequest->reason;
 
             // 勤怠本体を保存（remarksを反映させるため、再度保存が必要）
             $attendance->save();
-            
-            // ★★★【ここまで追加・修正】★★★
 
-
-            // ★ 必須: 勤務時間と休憩時間を再計算して更新 ★
             $this->updateWorkAndBreakTimes($attendance);
 
-            // $attendance->status = 'approved'; // ★不要なコードを削除★
-            // $attendance->save(); // ★不要なコードを削除★
-
-            // 申請ステータスを承認済(approved)にする
             StampCorrectionRequest::where('attendance_id', $attendance->id)
             ->where('status', 'pending')
             ->update([
