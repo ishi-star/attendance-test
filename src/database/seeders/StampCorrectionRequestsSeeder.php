@@ -17,7 +17,7 @@ class StampCorrectionRequestsSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::where('email', 'user@example.com')->first();
+        $user = User::where('email', 'dummy1@example.com')->first();
 
         $attendance = Attendance::first();
 
