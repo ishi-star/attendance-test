@@ -21,7 +21,7 @@
                 <button type="submit" class="attendance-button">出勤</button>
             </form>
         @elseif($attendance && !$attendance->clock_out && !$isBreaking)
-            <p class="attendance-status">勤務中</p>
+            <p class="attendance-status">出勤中</p>
             <p class="attendance-date">
                 {{ $attendance->clock_in->locale('ja')->translatedFormat('Y年n月j日')}} ({{ $dayOfWeek }})
             </p>

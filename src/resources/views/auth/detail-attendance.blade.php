@@ -52,7 +52,7 @@
 @endif
 
 <div class="detail-page-container">
-    <h2 class="page-heading">勤怠詳細6</h2>
+    <h2 class="page-heading">勤怠詳細</h2>
 
     {{-- 💡 フォームの action とクラスを isReadOnly に応じて制御 --}}
     <form action="{{ $isReadOnly ? '#' : route('attendance.request', ['id' => $attendance->id]) }}"

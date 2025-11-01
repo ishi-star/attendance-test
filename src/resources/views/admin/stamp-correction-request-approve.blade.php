@@ -43,7 +43,7 @@
     }
 @endphp
 <div class="detail-page-container">
-  <h2 class="page-heading">勤怠修正申請詳細</h2>
+  <h2 class="page-heading">勤怠詳細</h2>
 
   <form action="{{ route('admin.request.handle', ['id' => $requestDetail->id]) }}" method="POST">
     @csrf

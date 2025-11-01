@@ -8,17 +8,17 @@
 
 @section('content')
 {{-- スタッフの名前と表示月 --}}
-<h2 class="list-heading">{{ $user->name }}の{{ $targetMonth->format('Y年n月') }}の勤怠</h2>
+<h2 class="list-heading">{{ $user->name }}さんの勤怠</h2>
 
 {{-- 月ナビゲーション (前月/翌月) --}}
 <div class="month-navigation">
     {{-- 前月へのリンク --}}
-    <a href="{{ route('admin.user.attendances', ['id' => $user->id, 'month' => $targetMonth->copy()->subMonth()->format('Y-m')]) }}" class="list__nav-button">
+    <a href="{{ route('admin.user.attendances', ['user' => $user->id, 'month' => $targetMonth->copy()->subMonth()->format('Y-m')]) }}" class="list__nav-button">
         &larr; 前月
     </a>
-    <div class="list__date">{{ $targetMonth->format('Y/m') }}</div>
+    <div class="current-month">{{ $targetMonth->format('Y/m') }}</div>
     {{-- 翌月へのリンク --}}
-    <a href="{{ route('admin.user.attendances', ['id' => $user->id, 'month' => $targetMonth->copy()->addMonth()->format('Y-m')]) }}" class="list__nav-button">
+    <a href="{{ route('admin.user.attendances', ['user' => $user->id, 'month' => $targetMonth->copy()->addMonth()->format('Y-m')]) }}" class="list__nav-button">
         翌月 &rarr;
     </a>
 </div>

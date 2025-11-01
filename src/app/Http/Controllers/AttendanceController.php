@@ -55,7 +55,7 @@ class AttendanceController extends Controller
 
         // もし出勤記録がなければ、新規レコードを作成
         if ($attendance) {
-            return redirect()->back();
+            return redirect('/attendance');
         }
 
         Attendance::create([
@@ -63,7 +63,7 @@ class AttendanceController extends Controller
             'clock_in' => now(),
         ]);
 
-        return redirect()->back();
+        return redirect('/attendance');
     }
 
     // 退勤を記録する
@@ -99,12 +99,13 @@ class AttendanceController extends Controller
 
             $attendance->update([
                 'clock_out' => $clockOut,
+                'total_break_time' => $totalBreakTime,
                 'work_time' => $totalWorkTime,// 勤務時間を更新
             ]);
-            return redirect()->back()->with('message', 'お疲れ様でした');
+            return redirect('/attendance')->with('message', 'お疲れ様でした');
         }
 
-        return redirect()->back();
+        return redirect('/attendance');
     }
 
     // 休憩開始を記録する
@@ -151,11 +152,11 @@ class AttendanceController extends Controller
                 $latestBreak->update([
                     'end_time' => Carbon::now(),
                 ]);
-                return redirect()->back();
+                return redirect('/attendance');
             }
         }
 
-        return redirect()->back();
+        return redirect('/attendance');
     }
 
      // 勤怠一覧画面を表示する

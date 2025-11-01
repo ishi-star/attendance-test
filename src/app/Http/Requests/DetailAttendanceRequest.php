@@ -50,6 +50,7 @@ class DetailAttendanceRequest extends FormRequest
                 'date_format:H:i',
                 'after:clock_in',
                 'before:breaks.*.end_time',
+                'before:clock_out',
             ],
             'breaks.*.end_time' => [
                 'required_with:breaks.*.start_time',
@@ -108,7 +109,7 @@ class DetailAttendanceRequest extends FormRequest
             // 出勤時間・退勤時間のカスタムエラーメッセージ
             // ----------------------------------------------------
             // 'clock_in.before' => '出勤時間もしくは退勤時間が不適切な値です', // before:clock_out を削除したため通常は不要
-            'clock_out.after' => '出勤時間もしくは退勤時間が不適切な値です',
+            'clock_out.after' => '出勤時間が不適切な値です',
 
             // ----------------------------------------------------
             // 備考欄のカスタムエラーメッセージ
@@ -116,10 +117,10 @@ class DetailAttendanceRequest extends FormRequest
             'remarks.required' => '備考を記入してください',
             
             // 必須チェック（片方のみ入力された場合）のメッセージを上書き
-            'breaks.*.start_time.required_with' => '休憩開始時間は、必ず指定してください。',
-            'breaks.*.end_time.required_with' => '休憩終了時間は、必ず指定してください。',
-            'new_break.start_time.required_with' => '休憩開始時間は、必ず指定してください。',
-            'new_break.end_time.required_with' => '休憩終了時間は、必ず指定してください。',
+            'breaks.*.start_time.required_with' => '休憩時間が不適切な値です',
+            'breaks.*.end_time.required_with' => '休憩時間が不適切な値です',
+            'new_break.start_time.required_with' => '休憩時間が不適切な値です',
+            'new_break.end_time.required_with' => '休憩時間が不適切な値です',
         ];
     }
     
