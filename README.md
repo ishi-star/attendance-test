@@ -1,4 +1,4 @@
-# マーケット
+# 勤怠管理アプリ
 ## 環境構築
 ### Dockerビルド
 - git clone git@github.com:ishi-star/attendance-test.git
