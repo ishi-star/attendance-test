@@ -30,6 +30,16 @@ php artisan db:seed
 - シンボリックリンク作成
 php artisan storage:link
 
+- アプリケーションキーの作成
+php artisan key:generate --show
+
+- .env ファイルを編集
+作成されたキーを貼り付け
+```
+APP_KEY=
+```
+
+
 ## 実行環境
 - PHP8.3.6
 - Laravel8.83.8
